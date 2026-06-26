@@ -613,13 +613,13 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div class="form-group">
           <label>State (Bundesland)</label>
           <select id="f_state" onchange="onStateChange()">
-            <option value="">— Select state —</option>
+            <option value="" data-i18n="selectState">— Select state —</option>
           </select>
         </div>
         <div class="form-group">
           <label>City</label>
           <select id="f_city" onchange="onCityChange()">
-            <option value="">— Select city —</option>
+            <option value="" data-i18n="selectCity">— Select city —</option>
             <optgroup label="★ Mietpreisbremse cities">
               <option>Berlin</option>
               <option>München</option>
@@ -680,7 +680,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div class="form-group">
           <label>Year Built</label>
           <select id="f_year">
-            <option value="">— Select era —</option>
+            <option value="" data-i18n="selectEra">— Select era —</option>
             <option value="1900">Pre-1900 (Historisch)</option>
             <option value="1910">1900–1918 (Gründerzeit)</option>
             <option value="1928">1919–1938 (Weimarer/NS)</option>
@@ -696,7 +696,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <div class="form-group">
           <label>Portal / Source</label>
           <select id="f_source">
-            <option value="">— Select portal —</option>
+            <option value="" data-i18n="selectPortal">— Select portal —</option>
             <optgroup label="Major portals">
               <option>ImmoScout24</option>
               <option>Immowelt</option>
@@ -951,6 +951,7 @@ const LANG = {
     risk:'Risk', allListings:'All listings', hasRisks:'Has risks',
     clean:'Clean', mpbOnly:'MPB only', stateBundesland:'State (Bundesland)',
     allStates:'All states', city:'City', allCities:'All cities',
+    selectState:'— Select state —', selectCity:'— Select city —', selectEra:'— Select era —', selectPortal:'— Select portal —',
     portfolio:'Portfolio', listings:'Listings', avgGross:'Avg. gross yield',
     avgNet:'Avg. net yield', loadSample:'Load Sample Data',
     sortScore:'Score ↓', sortYield:'Gross Yield ↓', sortNetYield:'Net Yield ↓',
@@ -1005,6 +1006,29 @@ const LANG = {
     compareBtn:'Compare',
     // Mini stats
     miniListings:'Listings', miniGross:'Avg. gross yield', miniNet:'Avg. net yield', miniPsqm:'Avg. €/sqm', miniRisks:'With risk flags',
+    // Risk flags
+    flagMissingPrice:'Missing price', flagMissingArea:'Missing area',
+    flagWarmOnly:'Warmmiete only — Kaltmiete unknown',
+    flagNoRent:'No rent data', flagRentUnclear:'Rent type unclear',
+    flagRentEst:'Rent estimated — not confirmed',
+    flagNoEnergy:'Energy class unknown',
+    flagBacklog:'Maintenance backlog',
+    flagVacant:'Vacant — no current income',
+    // Rent image tag
+    rentKalt:'Kaltmiete', rentWarm:'Warmmiete only', rentNone:'No rent data',
+    perMo:'/mo', sqm:'sqm',
+    // Rücklage risk text
+    ruecklageCalc:'Calculated from balance ÷ area',
+    rueckladgeLow:'⚠ Low — Sonderumlage risk (<€15/sqm)',
+    ruecklageMod:'Moderate (€15–30/sqm)',
+    ruecklageOk:'✓ Healthy (>€30/sqm)',
+    // Nebenkosten
+    nbkLabel:'Nbk → Total',
+    // n.r. label
+    nrLabel:'n.r.',
+    // Compare table
+    tenantedYes:'Yes', tenantedNo:'Vacant', tenantedUnk:'Unknown',
+    noFlags:'None',
   },
   de: {
     // Sidebar
@@ -1012,6 +1036,7 @@ const LANG = {
     risk:'Risiko', allListings:'Alle Objekte', hasRisks:'Mit Risiken',
     clean:'Ohne Risiken', mpbOnly:'Nur MPB', stateBundesland:'Bundesland',
     allStates:'Alle Bundesländer', city:'Stadt', allCities:'Alle Städte',
+    selectState:'— Bundesland wählen —', selectCity:'— Stadt wählen —', selectEra:'— Baujahr-Epoche —', selectPortal:'— Portal wählen —',
     portfolio:'Portfolio', listings:'Objekte', avgGross:'Ø Bruttorendite',
     avgNet:'Ø Nettorendite', loadSample:'Beispieldaten laden',
     sortScore:'Bewertung ↓', sortYield:'Bruttorendite ↓', sortNetYield:'Nettorendite ↓',
@@ -1066,6 +1091,29 @@ const LANG = {
     compareBtn:'Vergleichen',
     // Mini stats
     miniListings:'Objekte', miniGross:'Ø Bruttorendite', miniNet:'Ø Nettorendite', miniPsqm:'Ø €/m²', miniRisks:'Mit Risikoflaggen',
+    // Risk flags
+    flagMissingPrice:'Kaufpreis fehlt', flagMissingArea:'Fläche fehlt',
+    flagWarmOnly:'Nur Warmmiete — Kaltmiete unbekannt',
+    flagNoRent:'Keine Mietdaten', flagRentUnclear:'Mietart unklar',
+    flagRentEst:'Miete geschätzt — nicht bestätigt',
+    flagNoEnergy:'Energieklasse unbekannt',
+    flagBacklog:'Sanierungsstau',
+    flagVacant:'Leerstand — kein Einkommen',
+    // Rent image tag
+    rentKalt:'Kaltmiete', rentWarm:'Nur Warmmiete', rentNone:'Keine Mietdaten',
+    perMo:'/Mo.', sqm:'m²',
+    // Rücklage risk text
+    ruecklageCalc:'Berechnet aus Guthaben ÷ Fläche',
+    rueckladgeLow:'⚠ Niedrig — Sonderumlagerisiko (<€15/m²)',
+    ruecklageMod:'Moderat (€15–30/m²)',
+    ruecklageOk:'✓ Gut (>€30/m²)',
+    // Nebenkosten
+    nbkLabel:'Nbk → Gesamt',
+    // n.r. label
+    nrLabel:'n.r.',
+    // Compare table
+    tenantedYes:'Ja', tenantedNo:'Leerstand', tenantedUnk:'Unbekannt',
+    noFlags:'Keine',
   }
 };
 
@@ -1088,6 +1136,11 @@ function applyLang(){
   if(fe&&fe.options[0])fe.options[0].textContent=t('allEnergy');
   const fs=document.getElementById('filterState');
   if(fs&&fs.options[0])fs.options[0].textContent=t('allStates');
+  // Form select placeholders
+  const fState=document.getElementById('f_state');
+  if(fState&&fState.options[0]&&fState.options[0].value==='')fState.options[0].textContent=t('selectState');
+  const fCity=document.getElementById('f_city');
+  if(fCity&&fCity.options[0]&&fCity.options[0].value==='')fCity.options[0].textContent=t('selectCity');
   // filterCity is rebuilt by refreshCityFilter, handle there
   // Sort select options
   const ss=document.getElementById('sortSelect');
@@ -1142,44 +1195,44 @@ function calcMetrics(l){
 
 function riskFlags(l, m){
   const flags = [];
-  if(!l.price)  flags.push({t:'Missing price',cls:'risk'});
-  if(!l.area)   flags.push({t:'Missing area',cls:'risk'});
+  if(!l.price)  flags.push({t:t('flagMissingPrice'),cls:'risk'});
+  if(!l.area)   flags.push({t:t('flagMissingArea'),cls:'risk'});
 
   if(!l.coldRent && l.rentType === 'warm')
-    flags.push({t:'Warmmiete only — Kaltmiete unknown',cls:'risk'});
+    flags.push({t:t('flagWarmOnly'),cls:'risk'});
   else if(!l.coldRent && !l.warmRent)
-    flags.push({t:'No rent data',cls:'risk'});
+    flags.push({t:t('flagNoRent'),cls:'risk'});
   else if(l.rentType === 'unknown')
-    flags.push({t:'Rent type unclear',cls:'risk'});
+    flags.push({t:t('flagRentUnclear'),cls:'risk'});
   else if(l.rentType === 'estimate')
-    flags.push({t:'Rent estimated — not confirmed',cls:'warn'});
+    flags.push({t:t('flagRentEst'),cls:'warn'});
 
   if(m.grossYield !== null && m.grossYield < 3)
-    flags.push({t:`Low yield (${m.grossYield.toFixed(1)}%)`,cls:'risk'});
+    flags.push({t:`${t('lowYield')} (${m.grossYield.toFixed(1)}%)`,cls:'risk'});
 
   if(!l.energy)
-    flags.push({t:'Energy class unknown',cls:'warn'});
+    flags.push({t:t('flagNoEnergy'),cls:'warn'});
   else if(['F','G','H'].includes(l.energy))
-    flags.push({t:`Poor energy class ${l.energy} — renovation risk`,cls:'warn'});
+    flags.push({t:`${t('flagNoEnergy').replace('unknown',l.energy)} — renovation risk`,cls:'warn'});
 
   if(l.maintenanceBacklog)
-    flags.push({t:'Maintenance backlog',cls:'risk'});
+    flags.push({t:t('flagBacklog'),cls:'risk'});
 
   if(m.ruecklagePsqm !== null){
     if(m.ruecklagePsqm < 15)
-      flags.push({t:`Low Rücklage €${m.ruecklagePsqm.toFixed(0)}/sqm — Sonderumlage risk`,cls:'risk'});
+      flags.push({t:`${t('rueckladgeLow').replace('<€15/sqm',`€${m.ruecklagePsqm.toFixed(0)}/${t('sqm')}`)}`  ,cls:'risk'});
     else if(m.ruecklagePsqm < 30)
-      flags.push({t:`Moderate Rücklage €${m.ruecklagePsqm.toFixed(0)}/sqm`,cls:'warn'});
+      flags.push({t:`${t('ruecklageMod').replace('€15–30/sqm',`€${m.ruecklagePsqm.toFixed(0)}/${t('sqm')}`)}`,cls:'warn'});
   }
 
   if(m.nonRecovHaus > 350)
-    flags.push({t:`High non-recoverable Hausgeld €${Math.round(m.nonRecovHaus)}/mo`,cls:'warn'});
+    flags.push({t:`${t('hausgeld')} €${Math.round(m.nonRecovHaus)}${t('perMo')} (${t('nrLabel')})`,cls:'warn'});
 
   if(m.spek > 0 && m.spek < 10)
-    flags.push({t:`Spekulationsfrist: ${10 - m.spek}yr remaining — CGT on sale`,cls:'risk'});
+    flags.push({t:`Spekulationsfrist: ${10 - m.spek}yr — CGT`,cls:'risk'});
 
   if(l.tenanted === 'no')
-    flags.push({t:'Vacant — no current income',cls:'warn'});
+    flags.push({t:t('flagVacant'),cls:'warn'});
 
  
   if(l.mietpreisbremse)
@@ -1267,9 +1320,9 @@ function renderCards(data){
     const circ=2*Math.PI*15.9,dash=(sc/100)*circ;
     const stObj=STATES.find(s=>s.code===l.state);
     let rentTag='',rtCls='';
-    if(l.coldRent){rentTag=`Kaltmiete €${(+l.coldRent).toLocaleString('de-DE')}/mo`;rtCls='rent-ok';}
-    else if(l.warmRent){rentTag='Warmmiete only';rtCls='rent-warn';}
-    else{rentTag='No rent data';rtCls='rent-bad';}
+    if(l.coldRent){rentTag=`${t('rentKalt')} €${(+l.coldRent).toLocaleString('de-DE')}${t('perMo')}`;rtCls='rent-ok';}
+    else if(l.warmRent){rentTag=t('rentWarm');rtCls='rent-warn';}
+    else{rentTag=t('rentNone');rtCls='rent-bad';}
     const img=l.imageUrl
       ?`<img src="${escH(l.imageUrl)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><div class="card-img-placeholder" style="display:none"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24" style="opacity:.3"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>`
       :`<div class="card-img-placeholder"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24" style="opacity:.3"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>`;
@@ -1312,11 +1365,11 @@ function renderCards(data){
     </div>
     <div class="metrics">
       <div class="metric"><div class="m-label">${t('kaufpreis')}</div><div class="m-val">${eur(l.price)||'<span class="na">—</span>'}</div></div>
-      <div class="metric"><div class="m-label">${t('wohnflaeche')}</div><div class="m-val">${l.area?l.area+' sqm':'<span class="na">—</span>'}</div></div>
+      <div class="metric"><div class="m-label">${t('wohnflaeche')}</div><div class="m-val">${l.area?l.area+' '+t('sqm'):'<span class="na">—</span>'}</div></div>
       <div class="metric"><div class="m-label">${t('psqm')}</div><div class="m-val ${m.psqm?(m.psqm<3500?'good':m.psqm<6500?'warn':'bad'):''}">${eur(m.psqm)||'<span class="na">—</span>'}</div></div>
       <div class="metric"><div class="m-label">${t('totalCost')}</div><div class="m-val" style="font-size:11px">${eur(m.totalAcqCost)||'—'}</div><div class="m-sub">${m.totalNbk?'+'+m.totalNbk.toFixed(1)+'% Nbk':''}</div></div>
       <div class="metric"><div class="m-label">${t('energieklasse')}</div><div class="m-val">${eBadge(l.energy)}</div></div>
-      <div class="metric"><div class="m-label">${t('hausgeld')}</div><div class="m-val ${m.nonRecovHaus>350?'warn':''}" style="font-size:11px">${l.hausgeld?'&#8364;'+l.hausgeld+'/mo':'<span class="na">—</span>'}</div><div class="m-sub">${l.hausgeld&&l.umlagefaehig?'&#8364;'+Math.round(m.nonRecovHaus)+' n.r.':''}</div></div>
+      <div class="metric"><div class="m-label">${t('hausgeld')}</div><div class="m-val ${m.nonRecovHaus>350?'warn':''}" style="font-size:11px">${l.hausgeld?'&#8364;'+l.hausgeld+'/mo':'<span class="na">—</span>'}</div><div class="m-sub">${l.hausgeld&&l.umlagefaehig?'€'+Math.round(m.nonRecovHaus)+' '+t('nrLabel'):''}</div></div>
     </div>
   </div>
   ${flags?`<div class="flags">${flags}</div>`:''}
@@ -1383,7 +1436,7 @@ function calcNebenkosten(){
   const p=+document.getElementById('f_price').value||0;
   const t=(+document.getElementById('f_grest').value||0)+(+document.getElementById('f_notar').value||0)+(+document.getElementById('f_makler').value||0);
   const a=p?p*(1+t/100):0;
-  document.getElementById('calcNebenkosten').textContent=p?(t.toFixed(2)+'% Nbk → Gesamt '+(eur(a)||'')):'—';
+  document.getElementById('calcNebenkosten').textContent=p?(nbkTotal.toFixed(2)+'% '+t('nbkLabel')+' '+(eur(a)||'')):'—';
   calcYieldPreview();
 }
 function calcHausgeld(){
@@ -1392,8 +1445,8 @@ function calcHausgeld(){
 }
 function calcRuecklage(){
   const r=+document.getElementById('f_ruecklage').value||0,a=+document.getElementById('f_area').value||0;
-  if(r&&a){const p=r/a;document.getElementById('f_ruecklagePsqm').value=p.toFixed(2);document.getElementById('ruecklage_risk').textContent=p<15?'⚠ Low — Sonderumlage risk (<€15/sqm)':p<30?'Moderate (€15–30/sqm)':'✓ Healthy (>€30/sqm)';}
-  else{document.getElementById('f_ruecklagePsqm').value='';document.getElementById('ruecklage_risk').textContent='Calculated from balance ÷ area';}
+  if(r&&a){const p=r/a;document.getElementById('f_ruecklagePsqm').value=p.toFixed(2);document.getElementById('ruecklage_risk').textContent=p<15?t('rueckladgeLow'):p<30?t('ruecklageMod'):t('ruecklageOk');}
+  else{document.getElementById('f_ruecklagePsqm').value='';document.getElementById('ruecklage_risk').textContent=t('ruecklageCalc');}
 }
 function calcYieldPreview(){
   const p=+document.getElementById('f_price').value||0,c=+document.getElementById('f_coldRent').value||0,rt=document.getElementById('f_rentType').value;
@@ -1696,9 +1749,9 @@ function openCompareModal(){
     ['Instandh.-Rücklage',  p=>+p.l.ruecklage||null, v=>'€'+v.toLocaleString('de-DE'), true],
     ['Energieklasse',       p=>p.l.energy||null, v=>eBadge(v), null],
     ['Baujahr',             p=>+p.l.yearBuilt||null, v=>v, true],
-    ['Tenanted',            p=>p.l.tenanted,     v=>v==='yes'?'<span style="color:var(--green)">Yes</span>':v==='no'?'<span style="color:var(--muted)">No (Vacant)</span>':'Unknown', null],
+    ['Tenanted',            p=>p.l.tenanted,     v=>v==='yes'?`<span style="color:var(--green)">${t('tenantedYes')}</span>`:v==='no'?`<span style="color:var(--muted)">${t('tenantedNo')}</span>`:t('tenantedUnk'), null],
     ['Mietpreisbremse',     p=>p.l.mietpreisbremse?1:0, v=>v?'<span style="color:var(--yellow)">Applies</span>':'<span style="color:var(--muted)">No</span>', null],
-    ['Risk Flags',          p=>riskFlags(p.l,p.m).length, v=>v===0?'<span style="color:var(--green)">None</span>':`<span style="color:var(--red)">${v} flag${v!==1?'s':''}</span>`, false],
+    ['Risk Flags',          p=>riskFlags(p.l,p.m).length, v=>v===0?`<span style="color:var(--green)">${t('noFlags')}</span>`:`<span style="color:var(--red)">${v} flag${v!==1?'s':''}</span>`, false],
     ['Bundesland',          p=>p.l.state,        v=>{const s=STATES.find(x=>x.code===v);return s?`${s.name} (${s.code})`:v||'—';}, null],
     ['Source',              p=>p.l.source,       v=>v||'—', null],
   ];
