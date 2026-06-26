@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RE Radar — Investment Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07090f;--sidebar:#0b0e1a;--surface:#111827;--surface2:#161f30;--surface3:#1c2840;
+  --border:#1e2d45;--border2:#243550;
+  --accent:#818cf8;--accent-d:#4f46e5;--accent-glow:rgba(129,140,248,.12);
+  --green:#34d399;--green-d:#065f46;--yellow:#fbbf24;--yellow-d:#78350f;--red:#f87171;--red-d:#7f1d1d;
+  --text:#f8fafc;--text2:#cbd5e1;--muted:#64748b;--muted2:#475569;
+  --r:12px;--r-sm:8px;--r-lg:16px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --shadow-lg:0 8px 48px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13px;line-height:1.5;display:flex;height:100vh;overflow:hidden}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ══════════ SIDEBAR ══════════ */
+.sidebar{width:240px;flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+
+.logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent-d),var(--accent));border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:16px;height:16px}
+.logo-text{font-size:14px;font-weight:800;letter-spacing:-.3px}
+.logo-text span{color:var(--accent)}
+
+.sidebar-section{padding:16px 12px 8px}
+.sidebar-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:0 6px;margin-bottom:8px}
+
+.btn-add{display:flex;align-items:center;gap:8px;background:var(--accent-d);color:#fff;border:none;border-radius:var(--r-sm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin:12px 12px 0;width:calc(100% - 24px);transition:all .2s}
+.btn-add:hover{background:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
+.btn-add svg{width:14px;height:14px}
+
+.sidebar-divider{height:1px;background:var(--border);margin:14px 12px}
+
+.filter-group{padding:0 12px;margin-bottom:12px}
+.filter-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block}
+.filter-group select,.filter-group input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);padding:7px 10px;font-size:12px;font-family:inherit}
+.filter-group select:focus,.filter-group input:focus{outline:none;border-color:var(--accent)}
+
+.mini-stat{padding:6px 18px;display:flex;justify-content:space-between;align-items:center}
+.mini-stat .ms-label{font-size:11px;color:var(--muted)}
+.mini-stat .ms-val{font-size:13px;font-weight:700;color:var(--text)}
+
+.sidebar-bottom{margin-top:auto;padding:14px 12px;border-top:1px solid var(--border)}
+.sample-btn{width:100%;background:transparent;border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--muted);padding:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.sample-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ══════════ MAIN ══════════ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+.topbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--sidebar);flex-shrink:0}
+.search-wrap{position:relative;flex:1;max-width:420px}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);padding:8px 12px 8px 34px;font-size:13px;font-family:inherit}
+.search-wrap input:focus{outline:none;border-color:var(--accent)}
+.search-wrap input::placeholder{color:var(--muted)}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);width:14px;height:14px}
+
+.view-btns{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:2px;gap:2px;margin-left:auto}
+.view-btns button{padding:5px 10px;border:none;border-radius:6px;background:transparent;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+.view-btns button.active{background:var(--accent-d);color:#fff}
+.view-btns button svg{width:12px;height:12px}
+
+/* ══════════ STATS STRIP ══════════ */
+.stats-strip{display:flex;gap:1px;background:var(--border);flex-shrink:0}
+.stat-box{flex:1;background:var(--sidebar);padding:12px 20px}
+.stat-box .sb-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;font-weight:600}
+.stat-box .sb-val{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.stat-box .sb-sub{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ══════════ CONTENT ══════════ */
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* ══════════ CARDS ══════════ */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s;position:relative;cursor:default}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 32px rgba(79,70,229,.15)}
+
+.card-img-wrap{position:relative;height:176px;overflow:hidden;background:var(--surface2)}
+.card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.card:hover .card-img-wrap img{transform:scale(1.03)}
+.card-img-gradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(7,9,15,.9) 0%,rgba(7,9,15,.3) 50%,transparent 100%)}
+.card-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--surface2),var(--surface3));color:var(--muted2)}
+.card-img-placeholder svg{width:40px;height:40px;opacity:.4}
+
+/* score ring floats over image */
+.score-ring-wrap{position:absolute;top:10px;right:10px;width:52px;height:52px}
+.score-ring-wrap svg{width:52px;height:52px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:3.5}
+.ring-fill{fill:none;stroke-width:3.5;stroke-linecap:round;transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1)}
+.ring-text{fill:var(--text);font-size:10px;font-weight:800;font-family:'Inter',sans-serif;text-anchor:middle;transform:rotate(90deg);transform-origin:50% 50%}
+
+/* tag on image */
+.img-tag{position:absolute;bottom:10px;left:10px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;backdrop-filter:blur(8px)}
+.img-tag.rent-ok{background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.3)}
+.img-tag.rent-warn{background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
+.img-tag.rent-bad{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+
+.card-body{padding:14px 16px 0}
+.card-title{font-size:14px;font-weight:700;line-height:1.3;margin-bottom:2px}
+.card-address{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;margin-bottom:12px}
+.card-address svg{width:10px;height:10px;flex-shrink:0}
+
+.state-badge{display:inline-flex;align-items:center;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;font-size:9px;font-weight:700;color:var(--muted);padding:1px 5px;margin-left:4px;letter-spacing:.3px}
+.mpb-badge{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:var(--yellow)}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.metric{background:var(--surface2);border-radius:var(--r-sm);padding:8px 10px}
+.m-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:3px}
+.m-val{font-size:13px;font-weight:700}
+.m-val.good{color:var(--green)}
+.m-val.warn{color:var(--yellow)}
+.m-val.bad{color:var(--red)}
+.m-val.na{color:var(--muted);font-size:11px;font-weight:400}
+.m-sub{font-size:9px;color:var(--muted);margin-top:1px}
+
+/* yield section */
+.yield-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.yield-box{background:var(--surface2);border-radius:var(--r-sm);padding:8px 10px;position:relative;overflow:hidden}
+.yield-box::before{content:'';position:absolute;inset:0;opacity:.06;border-radius:var(--r-sm)}
+.yield-box.gross::before{background:var(--green)}
+.yield-box.net::before{background:var(--accent)}
+.yield-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.yield-val{font-size:18px;font-weight:800;letter-spacing:-.5px;margin-top:2px}
+.yield-val.good{color:var(--green)}
+.yield-val.warn{color:var(--yellow)}
+.yield-val.bad{color:var(--red)}
+.yield-val.na{color:var(--muted);font-size:13px;font-weight:400}
+.yield-basis{font-size:9px;color:var(--muted);margin-top:1px}
+
+/* energy */
+.energy-pill{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-weight:800;font-size:11px}
+
+/* risk flags */
+.flags{display:flex;flex-wrap:wrap;gap:4px;padding:8px 16px 10px}
+.flag{font-size:10px;font-weight:600;padding:3px 7px;border-radius:20px;border:1px solid}
+.flag.risk{background:rgba(248,113,113,.08);color:#fca5a5;border-color:rgba(248,113,113,.25)}
+.flag.warn{background:rgba(251,191,36,.08);color:#fde68a;border-color:rgba(251,191,36,.25)}
+.flag.info{background:rgba(129,140,248,.08);color:#a5b4fc;border-color:rgba(129,140,248,.25)}
+
+.card-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-top:1px solid var(--border)}
+.card-source{font-size:10px;color:var(--muted)}
+.card-actions{display:flex;gap:4px}
+.action-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:5px 8px;font-size:11px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:3px}
+.action-btn:hover{border-color:var(--accent);color:var(--accent)}
+.action-btn.del:hover{border-color:var(--red);color:var(--red)}
+.action-btn svg{width:11px;height:11px}
+
+/* ══════════ EMPTY ══════════ */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:var(--muted);text-align:center}
+.empty svg{width:56px;height:56px;opacity:.2;margin-bottom:16px}
+.empty h2{font-size:17px;color:var(--text2);margin-bottom:6px}
+.empty p{font-size:12px;max-width:320px}
+
+/* ══════════ TABLE ══════════ */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;font-weight:600;user-select:none}
+thead th:hover{color:var(--text)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:11px 14px;vertical-align:middle}
+
+/* ══════════ MODAL ══════════ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .2s}
+.overlay.open{opacity:1}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);transform:scale(.96);transition:transform .2s}
+.overlay.open .modal{transform:scale(1)}
+
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:10;border-radius:20px 20px 0 0}
+.modal-title{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.modal-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+
+.modal-body{padding:20px 24px}
+.form-section{margin-bottom:24px}
+.form-section-title{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.form-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-grid.thirds{grid-template-columns:1fr 1fr 1fr}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.form-group input,.form-group select,.form-group textarea{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);padding:8px 11px;font-size:13px;font-family:inherit;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent)}
+.form-group input::placeholder{color:var(--muted)}
+.form-group textarea{resize:vertical;min-height:60px}
+.form-group .hint{font-size:10px;color:var(--muted);margin-top:2px}
+.form-group .calc-val{font-size:11px;color:var(--accent);font-weight:600;margin-top:2px}
+
+.calc-row{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.calc-row .cr-label{font-size:11px;color:var(--muted)}
+.calc-row .cr-val{font-size:14px;font-weight:700;color:var(--accent)}
+
+.check-group{display:flex;align-items:center;gap:8px;padding:8px 0}
+.check-group input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.check-group label{font-size:13px;color:var(--text2);cursor:pointer}
+
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--surface);border-radius:0 0 20px 20px}
+.btn{border:none;border-radius:var(--r-sm);padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border2)}
+.btn-primary{background:linear-gradient(135deg,var(--accent-d),var(--accent));color:#fff}
+.btn-primary:hover{opacity:.9;box-shadow:0 0 20px var(--accent-glow)}
+
+.hidden{display:none!important}
+
+/* ══════════ ANIMATIONS ══════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeUp .3s ease both}
+.card:nth-child(1){animation-delay:.03s}
+.card:nth-child(2){animation-delay:.06s}
+.card:nth-child(3){animation-delay:.09s}
+.card:nth-child(4){animation-delay:.12s}
+.card:nth-child(5){animation-delay:.15s}
+.card:nth-child(6){animation-delay:.18s}
+
+/* ══════════ RENT WARNING BANNER ══════════ */
+.rent-note{display:flex;gap:6px;align-items:flex-start;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:var(--r-sm);padding:8px 10px;margin-top:6px}
+.rent-note svg{width:12px;height:12px;color:var(--yellow);flex-shrink:0;margin-top:1px}
+.rent-note span{font-size:11px;color:#fde68a}
+
+/* ══════════ COMPARE SELECT BUTTON ══════════ */
+.card-compare-btn{position:absolute;top:10px;left:10px;width:26px;height:26px;border-radius:6px;border:2px solid rgba(255,255,255,.3);background:rgba(7,9,15,.5);backdrop-filter:blur(6px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;z-index:5}
+.card-compare-btn:hover{border-color:var(--accent);background:rgba(79,70,229,.3)}
+.card-compare-btn.selected{border-color:var(--accent);background:var(--accent-d);box-shadow:0 0 12px rgba(79,70,229,.5)}
+.card-compare-btn svg{width:12px;height:12px;stroke:#fff}
+.card.in-compare{border-color:var(--accent);box-shadow:0 0 0 2px rgba(129,140,248,.25)}
+
+/* ══════════ COMPARE BAR ══════════ */
+.compare-bar{position:fixed;bottom:-80px;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:0 24px;transition:bottom .3s cubic-bezier(.4,0,.2,1)}
+.compare-bar.visible{bottom:20px}
+.compare-bar-inner{background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:12px 20px;display:flex;align-items:center;gap:16px;box-shadow:0 8px 40px rgba(79,70,229,.3);max-width:700px;width:100%}
+.compare-bar-thumbs{display:flex;gap:8px;flex:1}
+.compare-thumb{width:40px;height:40px;border-radius:8px;border:1.5px solid var(--border2);overflow:hidden;background:var(--surface2);flex-shrink:0;position:relative}
+.compare-thumb img{width:100%;height:100%;object-fit:cover}
+.compare-thumb-empty{width:40px;height:40px;border-radius:8px;border:1.5px dashed var(--border2);background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.compare-thumb-empty svg{width:14px;height:14px;color:var(--muted2);opacity:.5}
+.compare-bar-label{font-size:12px;color:var(--muted);white-space:nowrap}
+.compare-bar-label strong{color:var(--text);font-weight:700}
+.btn-compare-go{background:linear-gradient(135deg,var(--accent-d),var(--accent));color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:opacity .15s}
+.btn-compare-go:hover{opacity:.88}
+.btn-compare-go svg{width:13px;height:13px}
+.btn-compare-clear{background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-compare-clear:hover{border-color:var(--red);color:var(--red)}
+
+/* ══════════ COMPARE MODAL ══════════ */
+.compare-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:300;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s}
+.compare-overlay.open{opacity:1;pointer-events:all}
+.compare-modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:1100px;overflow:hidden;box-shadow:var(--shadow-lg);transform:scale(.97);transition:transform .2s}
+.compare-overlay.open .compare-modal{transform:scale(1)}
+.compare-modal-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:5}
+.compare-table{width:100%;border-collapse:collapse}
+.compare-table th{padding:14px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:var(--surface2);border-bottom:1px solid var(--border);min-width:160px}
+.compare-table th.prop-header{min-width:200px}
+.compare-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.compare-table tr:last-child td{border-bottom:none}
+.compare-table td.row-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:var(--surface2);white-space:nowrap}
+.compare-table td.best{color:var(--green);font-weight:700}
+.compare-table td.best::after{content:' ✓';font-size:10px;opacity:.7}
+.compare-table td.worst{color:var(--red)}
+.compare-prop-img{width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px}
+.compare-prop-name{font-size:13px;font-weight:700;line-height:1.3;margin-bottom:4px}
+.compare-prop-addr{font-size:11px;color:var(--muted)}
+.score-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:20px;font-size:12px;font-weight:700}
+
+/* ══════════ FIND MODAL ══════════ */
+.find-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.find-overlay.open{opacity:1;pointer-events:all}
+.find-modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:580px;overflow:hidden;box-shadow:var(--shadow-lg);transform:scale(.97);transition:transform .2s}
+.find-overlay.open .find-modal{transform:scale(1)}
+.find-modal-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.find-modal-body{padding:20px 24px}
+.portal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+.portal-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;text-decoration:none;color:var(--text);transition:all .15s;font-size:13px;font-weight:600}
+.portal-btn:hover{border-color:var(--accent);background:var(--accent-glow);transform:translateY(-1px)}
+.portal-logo{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;color:#fff}
+.find-criteria{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:4px}
+.find-criteria .form-group{margin:0}
+.find-criteria label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+.find-criteria input,.find-criteria select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);padding:7px 10px;font-size:12px;font-family:inherit;outline:none}
+.find-criteria input:focus,.find-criteria select:focus{border-color:var(--accent)}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <div class="logo-text">RE <span>Radar</span></div>
+  </div>
+
+  <button class="btn-add" onclick="openModal()">
+    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Property
+  </button>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="filter-group">
+    <span class="filter-label">Sort by</span>
+    <select id="sortSelect" onchange="render()">
+      <option value="score">Score ↓</option>
+      <option value="yield">Gross Yield ↓</option>
+      <option value="netyield">Net Yield ↓</option>
+      <option value="price">Price ↑</option>
+      <option value="psqm">€/sqm ↑</option>
+      <option value="name">Name A–Z</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Energy class</span>
+    <select id="filterEnergy" onchange="render()">
+      <option value="">All</option>
+      <option>A+</option><option>A</option><option>B</option><option>C</option>
+      <option>D</option><option>E</option><option>F</option><option>G</option><option>H</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">Risk</span>
+    <select id="filterRisk" onchange="render()">
+      <option value="">All listings</option>
+      <option value="risks">Has risk flags</option>
+      <option value="clean">Clean (no flags)</option>
+      <option value="mpb">Mietpreisbremse</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">State (Bundesland)</span>
+    <select id="filterState" onchange="render()">
+      <option value="">All states</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">City</span>
+    <select id="filterCity" onchange="render()">
+      <option value="">All cities</option>
+    </select>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-label" style="padding:0 18px">Portfolio</div>
+  <div class="mini-stat"><span class="ms-label">Listings</span><span class="ms-val" id="sbCount">0</span></div>
+  <div class="mini-stat"><span class="ms-label">Avg. gross yield</span><span class="ms-val" id="sbYield">—</span></div>
+  <div class="mini-stat"><span class="ms-label">Avg. net yield</span><span class="ms-val" id="sbNetYield">—</span></div>
+  <div class="mini-stat"><span class="ms-label">Avg. €/sqm</span><span class="ms-val" id="sbPsqm">—</span></div>
+  <div class="mini-stat"><span class="ms-label">With risk flags</span><span class="ms-val" id="sbRisks">—</span></div>
+
+  <div class="sidebar-bottom">
+    <button class="sample-btn" onclick="loadSampleData()">Load sample data</button>
+  </div>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="main">
+  <!-- topbar -->
+  <div class="topbar">
+    <div class="search-wrap">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search properties, addresses…" oninput="render()"/>
+    </div>
+    <button onclick="openFindModal()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:var(--r-sm);padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Find Listings
+    </button>
+    <button onclick="openPasteModal()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:var(--r-sm);padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Smart Paste
+    </button>
+    <button onclick="loadSampleData()" style="background:linear-gradient(135deg,#4f46e5,#818cf8);color:#fff;border:none;border-radius:var(--r-sm);padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;box-shadow:0 0 16px rgba(129,140,248,.35);letter-spacing:.2px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.29"/></svg>
+      Load Sample Data
+    </button>
+    <div class="view-btns">
+      <button id="btnCards" class="active" onclick="setView('cards')">
+        <svg fill="currentColor" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Cards
+      </button>
+      <button id="btnTable" onclick="setView('table')">
+        <svg fill="currentColor" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
+        Table
+      </button>
+    </div>
+  </div>
+
+  <!-- stats strip -->
+  <div class="stats-strip">
+    <div class="stat-box"><div class="sb-label">Total Listings</div><div class="sb-val" id="stCount">0</div></div>
+    <div class="stat-box"><div class="sb-label">Best Score</div><div class="sb-val" id="stTop">—</div></div>
+    <div class="stat-box"><div class="sb-label">Avg Gross Yield</div><div class="sb-val" id="stYield">—</div></div>
+    <div class="stat-box"><div class="sb-label">Avg Net Yield</div><div class="sb-val" id="stNet">—</div></div>
+    <div class="stat-box"><div class="sb-label">Avg €/sqm</div><div class="sb-val" id="stPsqm">—</div></div>
+  </div>
+
+  <!-- content -->
+  <div class="content">
+    <!-- cards view -->
+    <div id="cardsView">
+      <div class="cards-grid" id="cardsGrid"></div>
+      <div class="empty hidden" id="emptyState">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <h2>No properties yet</h2>
+        <p>Add a property manually or click "Load sample data" to see the radar in action.</p>
+      </div>
+    </div>
+    <!-- table view -->
+    <div id="tableView" class="table-wrap hidden">
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('name')">Property</th>
+          <th onclick="sortBy('price')">Price</th>
+          <th onclick="sortBy('psqm')">€/sqm</th>
+          <th>Kaltmiete/mo</th>
+          <th onclick="sortBy('yield')">Gross Yield</th>
+          <th onclick="sortBy('netyield')">Net Yield</th>
+          <th>Energy</th>
+          <th onclick="sortBy('score')">Score</th>
+          <th>Flags</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════ SMART PASTE MODAL ══════════ -->
+<div class="overlay hidden" id="pasteOverlay" onclick="if(event.target===this)closePasteModal()">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-title" style="display:flex;align-items:center;gap:8px">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Smart Paste — Extract from Listing
+      </div>
+      <button class="modal-close" onclick="closePasteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.6">Copy <strong style="color:var(--text2)">everything</strong> from a listing page (ImmoScout24, Immowelt, Immonet, etc.) and paste it below. The parser extracts Kaufpreis, Wohnfläche, Baujahr, Kaltmiete, Hausgeld, Energieklasse, Provision, and more — then pre-fills the form for you to review.</p>
+      <textarea id="pasteText" placeholder="Paste full listing text here…&#10;&#10;Example:&#10;3-Zimmer-Wohnung Berlin-Prenzlauer Berg&#10;Kaufpreis: 480.000 €&#10;Wohnfläche: 82 m²&#10;Baujahr: 1908&#10;Kaltmiete: 1.400 €&#10;Hausgeld: 290 €&#10;Energieeffizienzklasse: C&#10;Provision: 3,57% inkl. MwSt.&#10;Vermietet." style="width:100%;height:260px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);padding:12px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.6;outline:none"></textarea>
+      <div id="pasteResult" style="margin-top:10px;min-height:22px;font-size:12px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closePasteModal()">Cancel</button>
+      <button class="btn-primary" onclick="applyParsed()" style="display:flex;align-items:center;gap:7px">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Extract &amp; Fill Form
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL ══════════ -->
+<div class="overlay hidden" id="overlay" onclick="bgClose(event)">
+ <div class="modal" id="modal">
+  <div class="modal-header">
+    <div class="modal-title" id="modalTitle">Add Property</div>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body">
+
+    <!-- SECTION 1: Property Info -->
+    <div class="form-section">
+      <div class="form-section-title">Property Info</div>
+      <div class="form-grid">
+        <div class="form-group form-full">
+          <label>Property Name / Title *</label>
+          <input type="text" id="f_name" placeholder="e.g. 3-Zimmer Wohnung Prenzlauer Berg"/>
+        </div>
+        <div class="form-group form-full">
+          <label>Address</label>
+          <input type="text" id="f_address" placeholder="e.g. Schönhauser Allee 45, 10437 Berlin"/>
+        </div>
+        <div class="form-group">
+          <label>State (Bundesland)</label>
+          <select id="f_state" onchange="onStateChange()">
+            <option value="">— Select state —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <select id="f_city" onchange="onCityChange()">
+            <option value="">— Select city —</option>
+            <optgroup label="★ Mietpreisbremse cities">
+              <option>Berlin</option>
+              <option>München</option>
+              <option>Hamburg</option>
+              <option>Frankfurt am Main</option>
+              <option>Köln</option>
+              <option>Stuttgart</option>
+              <option>Düsseldorf</option>
+              <option>Dortmund</option>
+              <option>Essen</option>
+              <option>Leipzig</option>
+              <option>Bremen</option>
+              <option>Hannover</option>
+              <option>Nürnberg</option>
+              <option>Duisburg</option>
+              <option>Bochum</option>
+              <option>Wuppertal</option>
+              <option>Bielefeld</option>
+              <option>Bonn</option>
+              <option>Münster</option>
+              <option>Karlsruhe</option>
+              <option>Mannheim</option>
+              <option>Augsburg</option>
+              <option>Wiesbaden</option>
+              <option>Gelsenkirchen</option>
+              <option>Mönchengladbach</option>
+              <option>Braunschweig</option>
+              <option>Chemnitz</option>
+              <option>Kiel</option>
+              <option>Aachen</option>
+              <option>Halle (Saale)</option>
+              <option>Magdeburg</option>
+              <option>Freiburg im Breisgau</option>
+              <option>Krefeld</option>
+              <option>Lübeck</option>
+              <option>Mainz</option>
+              <option>Erfurt</option>
+            </optgroup>
+            <optgroup label="Other major cities">
+              <option>Dresden</option>
+              <option>Rostock</option>
+              <option>Potsdam</option>
+              <option>Saarbrücken</option>
+              <option>Regensburg</option>
+              <option>Ingolstadt</option>
+              <option>Würzburg</option>
+              <option>Ulm</option>
+              <option>Heilbronn</option>
+              <option>Pforzheim</option>
+              <option>Wolfsburg</option>
+              <option>Osnabrück</option>
+              <option>Göttingen</option>
+              <option>Heidelberg</option>
+              <option>Darmstadt</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Year Built</label>
+          <select id="f_year">
+            <option value="">— Select era —</option>
+            <option value="1900">Pre-1900 (Historisch)</option>
+            <option value="1910">1900–1918 (Gründerzeit)</option>
+            <option value="1928">1919–1938 (Weimarer/NS)</option>
+            <option value="1955">1945–1960 (Nachkrieg)</option>
+            <option value="1968">1961–1975 (Plattenbau-Ära)</option>
+            <option value="1982">1976–1990</option>
+            <option value="1996">1991–2000</option>
+            <option value="2006">2001–2010</option>
+            <option value="2016">2011–2020</option>
+            <option value="2023">2021+ (Neubau)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Portal / Source</label>
+          <select id="f_source">
+            <option value="">— Select portal —</option>
+            <optgroup label="Major portals">
+              <option>ImmoScout24</option>
+              <option>Immowelt</option>
+              <option>Immonet</option>
+              <option>eBay Kleinanzeigen</option>
+              <option>Kleinanzeigen</option>
+            </optgroup>
+            <optgroup label="Agencies">
+              <option>Engel & Völkers</option>
+              <option>von Poll Immobilien</option>
+              <option>Dahler & Company</option>
+              <option>Savills</option>
+              <option>CBRE</option>
+              <option>JLL</option>
+              <option>Colliers</option>
+              <option>Christie's RE</option>
+            </optgroup>
+            <optgroup label="Banks & other">
+              <option>Sparkasse Immo</option>
+              <option>Volksbank Immo</option>
+              <option>Deutsche Bank Immo</option>
+              <option>Postbank Immo</option>
+              <option>Off-market / direct</option>
+              <option>Auction / Zwangsversteigerung</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label>Photo URL (optional)</label>
+          <input type="url" id="f_imageUrl" placeholder="https://… paste any image link"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Purchase Costs -->
+    <div class="form-section">
+      <div class="form-section-title">Purchase & Acquisition Costs</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Purchase Price — Kaufpreis (€) *</label>
+          <input type="number" id="f_price" placeholder="350000" min="0" oninput="calcNebenkosten()"/>
+        </div>
+        <div class="form-group">
+          <label>Living Area — Wohnfläche (sqm) *</label>
+          <input type="number" id="f_area" placeholder="75" min="0" step="0.1" oninput="calcNebenkosten()"/>
+        </div>
+      </div>
+      <div class="form-grid thirds" style="margin-top:10px">
+        <div class="form-group">
+          <label>Grunderwerbsteuer (%)</label>
+          <input type="number" id="f_grest" placeholder="6.0" min="0" max="10" step="0.1" oninput="calcNebenkosten()"/>
+          <span class="hint" id="grest_hint">Auto-filled from state</span>
+        </div>
+        <div class="form-group">
+          <label>Notarkosten (%)</label>
+          <input type="number" id="f_notar" placeholder="1.5" min="0" max="5" step="0.1" value="1.5" oninput="calcNebenkosten()"/>
+        </div>
+        <div class="form-group">
+          <label>Maklergebühr Käufer (%)</label>
+          <input type="number" id="f_makler" placeholder="3.57" min="0" max="10" step="0.01" oninput="calcNebenkosten()"/>
+        </div>
+      </div>
+      <div class="calc-row">
+        <span class="cr-label">Total Nebenkosten &amp; Total Acquisition Cost</span>
+        <span class="cr-val" id="calcNebenkosten">—</span>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Rent & Income -->
+    <div class="form-section">
+      <div class="form-section-title">Rent &amp; Income</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Kaltmiete / mo (€) — cold rent ★</label>
+          <input type="number" id="f_coldRent" placeholder="1100" min="0" oninput="calcYieldPreview()"/>
+          <span class="hint">Yield is always based on Kaltmiete only</span>
+        </div>
+        <div class="form-group">
+          <label>Warmmiete / mo (€) — warm rent</label>
+          <input type="number" id="f_warmRent" placeholder="1350" min="0" oninput="calcYieldPreview()"/>
+          <span class="hint">For reference only — never used in yield</span>
+        </div>
+        <div class="form-group">
+          <label>Rent Data Status</label>
+          <select id="f_rentType">
+            <option value="cold">Kaltmiete confirmed</option>
+            <option value="warm">Warmmiete only — Kaltmiete unknown</option>
+            <option value="estimate">Estimated / market comparables</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Currently Tenanted?</label>
+          <select id="f_tenanted">
+            <option value="yes">Yes — existing tenant</option>
+            <option value="no">No — vacant</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+      </div>
+      <div id="warmRentNote" class="rent-note hidden">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Yield will be shown as N/A. Warm rent cannot substitute for cold rent — Nebenkosten share is unknown.</span>
+      </div>
+      <div class="calc-row" style="margin-top:8px">
+        <span class="cr-label">Live Gross Yield preview (Bruttomietrendite on Kaufpreis)</span>
+        <span class="cr-val" id="yieldPreview">—</span>
+      </div>
+      <div class="check-group" style="margin-top:4px">
+        <input type="checkbox" id="f_mpb"/>
+        <label for="f_mpb">Mietpreisbremse applies (rent increase cap) — auto-detected from city</label>
+      </div>
+    </div>
+
+    <!-- SECTION 4: Running Costs -->
+    <div class="form-section">
+      <div class="form-section-title">Running Costs — Hausgeld &amp; Rücklage</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Total Hausgeld / mo (€)</label>
+          <input type="number" id="f_hausgeld" placeholder="300" min="0" oninput="calcHausgeld()"/>
+          <span class="hint">Full monthly HOA fee</span>
+        </div>
+        <div class="form-group">
+          <label>Umlagefähiger Anteil (%)</label>
+          <input type="number" id="f_umlagefaehig" placeholder="65" min="0" max="100" value="65" oninput="calcHausgeld()"/>
+          <span class="hint">Recoverable from tenant (~60–70% typical)</span>
+        </div>
+      </div>
+      <div class="calc-row">
+        <span class="cr-label">Non-recoverable Hausgeld / mo (owner's cost)</span>
+        <span class="cr-val" id="calcHausgeld">—</span>
+      </div>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="form-group">
+          <label>Instandhaltungsrücklage Balance (€)</label>
+          <input type="number" id="f_ruecklage" placeholder="12000" min="0" oninput="calcRuecklage()"/>
+          <span class="hint">Total reserve fund held by HOA</span>
+        </div>
+        <div class="form-group">
+          <label>Rücklage per sqm (€/sqm)</label>
+          <input type="number" id="f_ruecklagePsqm" placeholder="auto" min="0" step="0.01" readonly style="color:var(--accent)"/>
+          <span class="hint" id="ruecklage_risk">Calculated from balance ÷ area</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: Risk & Other -->
+    <div class="form-section">
+      <div class="form-section-title">Risk Factors &amp; Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Energy Class (Energieklasse)</label>
+          <select id="f_energy">
+            <option value="">Unknown</option>
+            <option>A+</option><option>A</option><option>B</option><option>C</option>
+            <option>D</option><option>E</option><option>F</option><option>G</option><option>H</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Spekulationsfrist — years into 10yr window</label>
+          <input type="number" id="f_spekfrist" placeholder="0" min="0" max="10" step="0.5"/>
+          <span class="hint">Years elapsed since purchase (CGT applies if &lt;10)</span>
+        </div>
+      </div>
+      <div class="check-group">
+        <input type="checkbox" id="f_backlog"/>
+        <label for="f_backlog">Maintenance backlog known or suspected</label>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label>Notes / Missing Info</label>
+        <textarea id="f_notes" placeholder="Open questions, observations, missing data…"></textarea>
+      </div>
+    </div>
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveListing()">Save Property</button>
+  </div>
+ </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════
+const STATES = [
+  {code:'BE',name:'Berlin',grest:6.0},
+  {code:'BY',name:'Bayern',grest:3.5},
+  {code:'BW',name:'Baden-Württemberg',grest:5.0},
+  {code:'BB',name:'Brandenburg',grest:6.5},
+  {code:'HB',name:'Bremen',grest:5.0},
+  {code:'HH',name:'Hamburg',grest:4.5},
+  {code:'HE',name:'Hessen',grest:6.0},
+  {code:'MV',name:'Mecklenburg-Vorpommern',grest:5.0},
+  {code:'NI',name:'Niedersachsen',grest:5.0},
+  {code:'NW',name:'Nordrhein-Westfalen',grest:6.5},
+  {code:'RP',name:'Rheinland-Pfalz',grest:5.0},
+  {code:'SL',name:'Saarland',grest:6.5},
+  {code:'SN',name:'Sachsen',grest:3.5},
+  {code:'ST',name:'Sachsen-Anhalt',grest:5.0},
+  {code:'SH',name:'Schleswig-Holstein',grest:6.5},
+  {code:'TH',name:'Thüringen',grest:6.5},
+];
+
+const MPB_CITIES = new Set([
+  'berlin','münchen','munich','hamburg','frankfurt','frankfurt am main',
+  'stuttgart','köln','cologne','düsseldorf','dusseldorf','leipzig','dresden',
+  'hannover','nürnberg','nuremberg','augsburg','mannheim','karlsruhe',
+  'freiburg','freiburg im breisgau','wiesbaden','münster','muenster',
+  'bonn','darmstadt','heidelberg','mainz','potsdam','erfurt','rostock',
+  'kiel','lübeck','lubeck','braunschweig','kassel','halle','magdeburg',
+  'aachen','oberhausen','krefeld','hagen','hamm','mülheim','muelheim',
+  'solingen','leverkusen','osnabrück','osnabrueck','oldenburg','paderborn'
+]);
+
+const ENERGY_COLORS = {
+  'A+':'#10b981','A':'#34d399','B':'#6ee7b7','C':'#fbbf24',
+  'D':'#f59e0b','E':'#f97316','F':'#ef4444','G':'#dc2626','H':'#991b1b'
+};
+const ENERGY_SCORE  = {'A+':20,'A':18,'B':15,'C':12,'D':9,'E':6,'F':3,'G':1,'H':0};
+
+// populate state dropdowns
+const stateSelects = ['f_state','filterState'];
+stateSelects.forEach(id => {
+  const el = document.getElementById(id);
+  if(!el) return;
+  const isFilter = id === 'filterState';
+  STATES.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.code;
+    o.textContent = s.name;
+    el.appendChild(o);
+  });
+});
+
+// ═══════════════════════════════════════════════
+//  DATA STORE
+// ═══════════════════════════════════════════════
+let listings = JSON.parse(localStorage.getItem('re_radar_v3') || '[]');
+let editId = null;
+let compareSet = new Set();
+let currentView = 'cards';
+
+function persist(){ localStorage.setItem('re_radar_v3', JSON.stringify(listings)); }
+
+// ═══════════════════════════════════════════════
+//  METRICS & SCORING
+// ═══════════════════════════════════════════════
+function calcMetrics(l){
+  const price   = +l.price  || 0;
+  const area    = +l.area   || 0;
+  const cold    = +l.coldRent || 0;
+  const grest   = +l.grunderwerbsteuer || 0;
+  const notar   = +l.notarkosten || 0;
+  const makler  = +l.maklergebuehr || 0;
+  const hausgeld= +l.hausgeld || 0;
+  const umlag   = +l.umlagefaehig || 65;
+  const rueck   = +l.ruecklage || 0;
+  const spek    = +l.spekfrist || 0;
+
+  const psqm          = price && area ? price / area : null;
+  const totalNbk      = grest + notar + makler;
+  const totalAcqCost  = price ? price * (1 + totalNbk / 100) : 0;
+  const nonRecovHaus  = hausgeld * (1 - umlag / 100);
+
+  // Yield ONLY on Kaltmiete
+  const annualRent    = cold ? cold * 12 : null;
+  const grossYield    = annualRent && price ? (annualRent / price) * 100 : null;
+  const netYield      = annualRent && totalAcqCost
+    ? ((annualRent - nonRecovHaus * 12) / totalAcqCost) * 100
+    : null;
+
+  const ruecklagePsqm = rueck && area ? rueck / area : null;
+
+  return { psqm, totalNbk, totalAcqCost, nonRecovHaus, annualRent, grossYield, netYield, ruecklagePsqm, spek };
+}
+
+function riskFlags(l, m){
+  const flags = [];
+  if(!l.price)  flags.push({t:'Missing price',cls:'risk'});
+  if(!l.area)   flags.push({t:'Missing area',cls:'risk'});
+
+  if(!l.coldRent && l.rentType === 'warm')
+    flags.push({t:'Warmmiete only — Kaltmiete unknown',cls:'risk'});
+  else if(!l.coldRent && !l.warmRent)
+    flags.push({t:'No rent data',cls:'risk'});
+  else if(l.rentType === 'unknown')
+    flags.push({t:'Rent type unclear',cls:'risk'});
+  else if(l.rentType === 'estimate')
+    flags.push({t:'Rent estimated — not confirmed',cls:'warn'});
+
+  if(m.grossYield !== null && m.grossYield < 3)
+    flags.push({t:`Low yield (${m.grossYield.toFixed(1)}%)`,cls:'risk'});
+
+  if(!l.energy)
+    flags.push({t:'Energy class unknown',cls:'warn'});
+  else if(['F','G','H'].includes(l.energy))
+    flags.push({t:`Poor energy class ${l.energy} — renovation risk`,cls:'warn'});
+
+  if(l.maintenanceBacklog)
+    flags.push({t:'Maintenance backlog',cls:'risk'});
+
+  if(m.ruecklagePsqm !== null){
+    if(m.ruecklagePsqm < 15)
+      flags.push({t:`Low Rücklage €${m.ruecklagePsqm.toFixed(0)}/sqm — Sonderumlage risk`,cls:'risk'});
+    else if(m.ruecklagePsqm < 30)
+      flags.push({t:`Moderate Rücklage €${m.ruecklagePsqm.toFixed(0)}/sqm`,cls:'warn'});
+  }
+
+  if(m.nonRecovHaus > 350)
+    flags.push({t:`High non-recoverable Hausgeld €${Math.round(m.nonRecovHaus)}/mo`,cls:'warn'});
+
+  if(m.spek > 0 && m.spek < 10)
+    flags.push({t:`Spekulationsfrist: ${10 - m.spek}yr remaining — CGT on sale`,cls:'risk'});
+
+  if(l.tenanted === 'no')
+    flags.push({t:'Vacant — no current income',cls:'warn'});
+
+ 
+  if(l.mietpreisbremse)
+    flags.push({t:'Mietpreisbremse — rent increases capped',cls:'info'});
+
+  return flags;
+}
+
+function score(l,allPsqms){
+  const m=calcMetrics(l);
+  let yS=0;
+  if(m.grossYield!==null){
+    if(m.grossYield>=7)yS=40;
+    else if(m.grossYield>=6)yS=35;
+    else if(m.grossYield>=5)yS=28;
+    else if(m.grossYield>=4)yS=20;
+    else if(m.grossYield>=3)yS=12;
+    else yS=5;
+  }
+  const eS=l.energy?(ENERGY_SCORE[l.energy]??5):5;
+  let cS=0;
+  if(l.price)cS+=4; if(l.area)cS+=4; if(l.coldRent)cS+=5; if(l.energy)cS+=4; if(l.hausgeld)cS+=3;
+  let pS=10;
+  if(m.psqm!==null){
+    const valid=allPsqms.filter(v=>v!==null);
+    if(valid.length>1){const mn=Math.min(...valid),mx=Math.max(...valid);if(mx>mn)pS=Math.round(20*(1-(m.psqm-mn)/(mx-mn)));}
+  }
+  const flags=riskFlags(l,m);
+  const pen=flags.filter(f=>f.cls==='risk').length*4+flags.filter(f=>f.cls==='warn').length;
+  return Math.max(0,Math.min(100,Math.round(yS+eS+cS+pS-pen)));
+}
+
+function eur(v,dec=0){if(v==null||v===''||isNaN(+v)||+v===0&&dec===0&&!v)return null;return'€'+(+v).toLocaleString('de-DE',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function pct(v,dec=1){return v==null?null:v.toFixed(dec)+'%';}
+function yClass(v){if(v==null)return'na';if(v>=5)return'good';if(v>=3.5)return'warn';return'bad';}
+function scoreColor(s){if(s>=65)return'#34d399';if(s>=40)return'#fbbf24';return'#f87171';}
+function eBadge(ec){if(!ec)return'<span style="color:var(--muted);font-size:11px">—</span>';const c=ENERGY_COLORS[ec]||'#888';return`<span class="energy-pill" style="background:${c}22;color:${c};border:1px solid ${c}44">${ec}</span>`;}
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function refreshCityFilter(){
+  const sel=document.getElementById('filterCity');
+  if(!sel)return;
+  const cur=sel.value;
+  const cities=[...new Set(listings.map(l=>l.city).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">All cities</option>'+cities.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('');
+}
+
+function render(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const sortV=document.getElementById('sortSelect').value;
+  const fE=document.getElementById('filterEnergy').value;
+  const fR=document.getElementById('filterRisk').value;
+  const fSt=document.getElementById('filterState').value;
+  const fCt=document.getElementById('filterCity').value;
+  const allPsqms=listings.map(l=>calcMetrics(l).psqm);
+  let data=listings.map(l=>{const m=calcMetrics(l),sc=score(l,allPsqms),fl=riskFlags(l,m);return{...l,_m:m,_sc:sc,_fl:fl};});
+  if(q) data=data.filter(l=>(l.name||'').toLowerCase().includes(q)||(l.address||'').toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q));
+  if(fE) data=data.filter(l=>l.energy===fE);
+  if(fSt) data=data.filter(l=>l.state===fSt);
+  if(fCt) data=data.filter(l=>l.city===fCt);
+  if(fR==='risks') data=data.filter(l=>l._fl.length>0);
+  if(fR==='clean') data=data.filter(l=>l._fl.length===0);
+  if(fR==='mpb') data=data.filter(l=>l.mietpreisbremse);
+  refreshCityFilter();
+  data.sort((a,b)=>{
+    if(sortV==='score') return b._sc-a._sc;
+    if(sortV==='yield') return (b._m.grossYield??-999)-(a._m.grossYield??-999);
+    if(sortV==='netyield') return (b._m.netYield??-999)-(a._m.netYield??-999);
+    if(sortV==='price') return (+a.price||Infinity)-(+b.price||Infinity);
+    if(sortV==='psqm') return (a._m.psqm??Infinity)-(b._m.psqm??Infinity);
+    if(sortV==='name') return (a.name||'').localeCompare(b.name||'');
+    return 0;
+  });
+  updateStats(data);
+  if(currentView==='cards') renderCards(data); else renderTable(data);
+}
+
+function renderCards(data){
+  const grid=document.getElementById('cardsGrid');
+  const empty=document.getElementById('emptyState');
+  if(!data.length){grid.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  grid.innerHTML=data.map((l,i)=>{
+    const m=l._m,sc=l._sc,col=scoreColor(sc);
+    const circ=2*Math.PI*15.9,dash=(sc/100)*circ;
+    const stObj=STATES.find(s=>s.code===l.state);
+    let rentTag='',rtCls='';
+    if(l.coldRent){rentTag=`Kaltmiete €${(+l.coldRent).toLocaleString('de-DE')}/mo`;rtCls='rent-ok';}
+    else if(l.warmRent){rentTag='Warmmiete only';rtCls='rent-warn';}
+    else{rentTag='No rent data';rtCls='rent-bad';}
+    const img=l.imageUrl
+      ?`<img src="${escH(l.imageUrl)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><div class="card-img-placeholder" style="display:none"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24" style="opacity:.3"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>`
+      :`<div class="card-img-placeholder"><svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24" style="opacity:.3"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>`;
+    const gF=m.grossYield!==null?pct(m.grossYield):null;
+    const nF=m.netYield!==null?pct(m.netYield):null;
+    const flags=l._fl.map(f=>`<span class="flag ${f.cls}">${f.t}</span>`).join('');
+    return `<div class="card ${compareSet.has(l.id)?'in-compare':''}" style="animation-delay:${i*.04}s">
+  <div class="card-img-wrap">${img}
+    <div class="card-img-gradient"></div>
+    <button class="card-compare-btn ${compareSet.has(l.id)?'selected':''}" onclick="toggleCompare('${l.id}')" title="Add to comparison">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    </button>
+    <div class="score-ring-wrap"><svg viewBox="0 0 36 36">
+      <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
+      <circle class="ring-fill" cx="18" cy="18" r="15.9" stroke="${col}" stroke-dasharray="${dash.toFixed(1)} ${(circ-dash).toFixed(1)}" stroke-dashoffset="${(circ*.25).toFixed(1)}"/>
+      <text x="18" y="22" style="fill:${col};font-size:9px;font-weight:800;font-family:Inter,sans-serif;text-anchor:middle">${sc}</text>
+    </svg></div>
+    <span class="img-tag ${rtCls}">${rentTag}</span>
+  </div>
+  <div class="card-body">
+    <div class="card-title">${escH(l.name||'Untitled')}</div>
+    <div class="card-address">
+      <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      ${l.address?escH(l.address):'<span style="color:var(--muted)">No address</span>'}
+      ${stObj?`<span class="state-badge">${stObj.code}</span>`:''}
+      ${l.mietpreisbremse?'<span class="state-badge mpb-badge">MPB</span>':''}
+    </div>
+    <div class="yield-row">
+      <div class="yield-box gross">
+        <div class="yield-label">Bruttomietrendite</div>
+        <div class="yield-val ${yClass(m.grossYield)}">${gF||'<span style="font-size:12px;font-weight:400;color:var(--muted)">N/A</span>'}</div>
+        <div class="yield-basis">Kaufpreis &middot; Kaltmiete only</div>
+      </div>
+      <div class="yield-box net">
+        <div class="yield-label">Nettomietrendite</div>
+        <div class="yield-val ${yClass(m.netYield)}">${nF||'<span style="font-size:12px;font-weight:400;color:var(--muted)">N/A</span>'}</div>
+        <div class="yield-basis">after non-recov. Hausgeld</div>
+      </div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="m-label">Kaufpreis</div><div class="m-val">${eur(l.price)||'<span class="na">—</span>'}</div></div>
+      <div class="metric"><div class="m-label">Wohnfl&auml;che</div><div class="m-val">${l.area?l.area+' sqm':'<span class="na">—</span>'}</div></div>
+      <div class="metric"><div class="m-label">&euro;/sqm</div><div class="m-val ${m.psqm?(m.psqm<3500?'good':m.psqm<6500?'warn':'bad'):''}">${eur(m.psqm)||'<span class="na">—</span>'}</div></div>
+      <div class="metric"><div class="m-label">Total Kosten</div><div class="m-val" style="font-size:11px">${eur(m.totalAcqCost)||'—'}</div><div class="m-sub">${m.totalNbk?'+'+m.totalNbk.toFixed(1)+'% Nbk':''}</div></div>
+      <div class="metric"><div class="m-label">Energieklasse</div><div class="m-val">${eBadge(l.energy)}</div></div>
+      <div class="metric"><div class="m-label">Hausgeld</div><div class="m-val ${m.nonRecovHaus>350?'warn':''}" style="font-size:11px">${l.hausgeld?'&#8364;'+l.hausgeld+'/mo':'<span class="na">—</span>'}</div><div class="m-sub">${l.hausgeld&&l.umlagefaehig?'&#8364;'+Math.round(m.nonRecovHaus)+' n.r.':''}</div></div>
+    </div>
+  </div>
+  ${flags?`<div class="flags">${flags}</div>`:''}
+  <div class="card-footer">
+    <span class="card-source">${escH(l.source||l.city||'')}</span>
+    <div class="card-actions">
+      <button class="action-btn" onclick="openModal('${l.id}')">&#9998; Edit</button>
+      <button class="action-btn del" onclick="deleteListing('${l.id}')">&#128465; Delete</button>
+    </div>
+  </div>
+</div>`;
+  }).join('');
+}
+
+function renderTable(data){
+  const body=document.getElementById('tableBody');
+  if(!data.length){body.innerHTML='<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">No listings</td></tr>';return;}
+  body.innerHTML=data.map(l=>{
+    const m=l._m,sc=l._sc;
+    return `<tr>
+      <td><div style="font-weight:600">${escH(l.name||'Untitled')}</div><div style="font-size:11px;color:var(--muted)">${escH(l.address||l.city||'')}</div></td>
+      <td>${eur(l.price)||'—'}</td>
+      <td>${eur(m.psqm)||'—'}</td>
+      <td>${l.coldRent?eur(l.coldRent)+'/mo':'<span style="color:var(--muted)">—</span>'}</td>
+      <td class="${yClass(m.grossYield)}">${pct(m.grossYield)||'—'}</td>
+      <td class="${yClass(m.netYield)}">${pct(m.netYield)||'—'}</td>
+      <td>${eBadge(l.energy)}</td>
+      <td><span style="font-size:14px;font-weight:800;color:${scoreColor(sc)}">${sc}</span></td>
+      <td>${l._fl.length?`<span style="color:var(--red);font-size:11px">${l._fl.length} flag${l._fl.length>1?'s':''}</span>`:'<span style="color:var(--green);font-size:11px">&#10003;</span>'}</td>
+      <td style="white-space:nowrap"><button class="action-btn" onclick="openModal('${l.id}')">Edit</button> <button class="action-btn del" onclick="deleteListing('${l.id}')">Del</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function updateStats(data){
+  const gy=data.map(l=>l._m.grossYield).filter(v=>v!=null);
+  const ny=data.map(l=>l._m.netYield).filter(v=>v!=null);
+  const ps=data.map(l=>l._m.psqm).filter(v=>v!=null);
+  const sc=data.map(l=>l._sc);
+  const avg=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1)+'%':'—';
+  const avgE=a=>a.length?'€'+Math.round(a.reduce((x,y)=>x+y)/a.length).toLocaleString('de-DE'):'—';
+  document.getElementById('sbCount').textContent=data.length;
+  document.getElementById('stCount').textContent=data.length;
+  document.getElementById('sbYield').textContent=avg(gy);
+  document.getElementById('sbNetYield').textContent=avg(ny);
+  document.getElementById('sbPsqm').textContent=avgE(ps);
+  document.getElementById('sbRisks').textContent=data.filter(l=>l._fl.length>0).length+(data.length?' / '+data.length:'');
+  document.getElementById('stTop').textContent=sc.length?Math.max(...sc):'—';
+  document.getElementById('stYield').textContent=avg(gy);
+  document.getElementById('stNet').textContent=avg(ny);
+  document.getElementById('stPsqm').textContent=avgE(ps);
+}
+
+function setView(v){currentView=v;document.getElementById('cardsView').classList.toggle('hidden',v!=='cards');document.getElementById('tableView').classList.toggle('hidden',v!=='table');document.getElementById('btnCards').classList.toggle('active',v==='cards');document.getElementById('btnTable').classList.toggle('active',v==='table');render();}
+function sortBy(f){document.getElementById('sortSelect').value=f;render();}
+
+function onStateChange(){
+  const st=STATES.find(s=>s.code===document.getElementById('f_state').value);
+  if(st){document.getElementById('f_grest').value=st.grest;document.getElementById('grest_hint').textContent=st.name+': '+st.grest+'% GrESt';}
+  calcNebenkosten();
+}
+function onCityChange(){const c=(document.getElementById('f_city').value||'').toLowerCase().trim().replace(/\s*\(.*\)/,'');document.getElementById('f_mpb').checked=MPB_CITIES.has(c);}
+function calcNebenkosten(){
+  const p=+document.getElementById('f_price').value||0;
+  const t=(+document.getElementById('f_grest').value||0)+(+document.getElementById('f_notar').value||0)+(+document.getElementById('f_makler').value||0);
+  const a=p?p*(1+t/100):0;
+  document.getElementById('calcNebenkosten').textContent=p?(t.toFixed(2)+'% Nbk → Gesamt '+(eur(a)||'')):'—';
+  calcYieldPreview();
+}
+function calcHausgeld(){
+  const h=+document.getElementById('f_hausgeld').value||0,u=+document.getElementById('f_umlagefaehig').value||65;
+  document.getElementById('calcHausgeld').textContent=h?('€'+Math.round(h*(1-u/100))+'/mo nicht umlagefähig'):'—';
+}
+function calcRuecklage(){
+  const r=+document.getElementById('f_ruecklage').value||0,a=+document.getElementById('f_area').value||0;
+  if(r&&a){const p=r/a;document.getElementById('f_ruecklagePsqm').value=p.toFixed(2);document.getElementById('ruecklage_risk').textContent=p<15?'⚠ Low — Sonderumlage risk (<€15/sqm)':p<30?'Moderate (€15–30/sqm)':'✓ Healthy (>€30/sqm)';}
+  else{document.getElementById('f_ruecklagePsqm').value='';document.getElementById('ruecklage_risk').textContent='Calculated from balance ÷ area';}
+}
+function calcYieldPreview(){
+  const p=+document.getElementById('f_price').value||0,c=+document.getElementById('f_coldRent').value||0,rt=document.getElementById('f_rentType').value;
+  const note=document.getElementById('warmRentNote');
+  if(rt==='warm'){note.classList.remove('hidden');document.getElementById('yieldPreview').textContent='N/A — Kaltmiete required';return;}
+  note.classList.add('hidden');
+  document.getElementById('yieldPreview').textContent=c&&p?(c*12/p*100).toFixed(2)+'% Bruttomietrendite':'—';
+}
+
+function openModal(id){
+  editId=id||null;
+  document.getElementById('modalTitle').textContent=id?'Edit Property':'Add Property';
+  if(id){
+    const l=listings.find(x=>x.id===id);
+    if(l){
+      const g=(fid,val)=>{const e=document.getElementById(fid);if(!e)return;if(e.type==='checkbox')e.checked=!!val;else e.value=val??'';};
+      g('f_name',l.name);g('f_address',l.address);g('f_state',l.state||'');g('f_city',l.city);g('f_year',l.yearBuilt);g('f_source',l.source);g('f_imageUrl',l.imageUrl);g('f_price',l.price);g('f_area',l.area);g('f_grest',l.grunderwerbsteuer);g('f_notar',l.notarkosten||1.5);g('f_makler',l.maklergebuehr);g('f_coldRent',l.coldRent);g('f_warmRent',l.warmRent);g('f_rentType',l.rentType||'cold');g('f_tenanted',l.tenanted||'unknown');g('f_mpb',l.mietpreisbremse);g('f_hausgeld',l.hausgeld);g('f_umlagefaehig',l.umlagefaehig||65);g('f_ruecklage',l.ruecklage);g('f_energy',l.energy||'');g('f_spekfrist',l.spekfrist);g('f_backlog',l.maintenanceBacklog);g('f_notes',l.notes);
+    }
+  } else {
+    ['f_name','f_address','f_city','f_year','f_source','f_imageUrl','f_price','f_area','f_grest','f_makler','f_coldRent','f_warmRent','f_hausgeld','f_ruecklage','f_ruecklagePsqm','f_spekfrist','f_notes'].forEach(fid=>{const e=document.getElementById(fid);if(e)e.value='';});
+    document.getElementById('f_notar').value='1.5';document.getElementById('f_umlagefaehig').value='65';document.getElementById('f_state').value='';document.getElementById('f_energy').value='';document.getElementById('f_rentType').value='cold';document.getElementById('f_tenanted').value='unknown';document.getElementById('f_mpb').checked=false;document.getElementById('f_backlog').checked=false;
+  }
+  calcNebenkosten();calcHausgeld();calcRuecklage();calcYieldPreview();
+  const ov=document.getElementById('overlay');ov.classList.remove('hidden');requestAnimationFrame(()=>ov.classList.add('open'));
+}
+function closeModal(){const ov=document.getElementById('overlay');ov.classList.remove('open');setTimeout(()=>{ov.classList.add('hidden');editId=null;},200);}
+function bgClose(e){if(e.target===document.getElementById('overlay'))closeModal();}
+
+function saveListing(){
+  const name=document.getElementById('f_name').value.trim();
+  if(!name){alert('Property name is required.');return;}
+  const v=id=>(document.getElementById(id)||{value:''}).value;
+  const entry={
+    id:editId||crypto.randomUUID(),name,address:v('f_address').trim(),state:v('f_state'),city:v('f_city').trim(),yearBuilt:v('f_year'),source:v('f_source').trim(),imageUrl:v('f_imageUrl').trim(),
+    price:v('f_price'),area:v('f_area'),grunderwerbsteuer:v('f_grest'),notarkosten:v('f_notar'),maklergebuehr:v('f_makler'),
+    coldRent:v('f_coldRent'),warmRent:v('f_warmRent'),rentType:v('f_rentType'),tenanted:v('f_tenanted'),
+    mietpreisbremse:document.getElementById('f_mpb').checked,
+    hausgeld:v('f_hausgeld'),umlagefaehig:v('f_umlagefaehig'),ruecklage:v('f_ruecklage'),
+    energy:v('f_energy'),spekfrist:v('f_spekfrist'),maintenanceBacklog:document.getElementById('f_backlog').checked,
+    notes:v('f_notes').trim(),
+    createdAt:editId?(listings.find(l=>l.id===editId)||{}).createdAt:new Date().toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+  if(editId){const i=listings.findIndex(l=>l.id===editId);if(i>=0)listings[i]=entry;}else listings.push(entry);
+  persist();closeModal();setTimeout(render,250);
+}
+
+function deleteListing(id){if(!confirm('Delete this property?'))return;listings=listings.filter(l=>l.id!==id);persist();render();}
+
+function loadSampleData(){
+  const ts=new Date().toISOString();
+  const newSamples=[
+    {name:'2-Zimmer Altbau Köln-Ehrenfeld',address:'Subbelrather Str. 22, 50823 Köln',state:'NW',city:'Köln',yearBuilt:'1955',source:'ImmoScout24',imageUrl:'https://images.pexels.com/photos/186077/pexels-photo-186077.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'310000',area:'64',grunderwerbsteuer:'6.5',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'1050',warmRent:'1280',rentType:'cold',tenanted:'yes',mietpreisbremse:true,hausgeld:'240',umlagefaehig:'65',ruecklage:'12000',energy:'D',spekfrist:'0',maintenanceBacklog:false,notes:'Great neighbourhood. MPB applies. Tenanted long-term.'},
+    {name:'3-Zimmer Neubau Stuttgart-West',address:'Rotebühlplatz 12, 70178 Stuttgart',state:'BW',city:'Stuttgart',yearBuilt:'2021',source:'von Poll Immobilien',imageUrl:'https://images.pexels.com/photos/323781/pexels-photo-323781.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'620000',area:'78',grunderwerbsteuer:'5.0',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'1850',warmRent:'2100',rentType:'cold',tenanted:'no',mietpreisbremse:true,hausgeld:'380',umlagefaehig:'70',ruecklage:'28000',energy:'A',spekfrist:'0',maintenanceBacklog:false,notes:'Brand new, energy-efficient. MPB city. Currently vacant.'},
+    {name:'4-Zimmer MFH Hannover-Linden',address:'Limmerstraße 78, 30451 Hannover',state:'NI',city:'Hannover',yearBuilt:'1972',source:'Sparkasse Immo',imageUrl:'https://images.pexels.com/photos/358636/pexels-photo-358636.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'280000',area:'102',grunderwerbsteuer:'5.0',notarkosten:'1.5',maklergebuehr:'0',coldRent:'1180',warmRent:'',rentType:'cold',tenanted:'yes',mietpreisbremse:true,hausgeld:'320',umlagefaehig:'60',ruecklage:'8500',energy:'E',spekfrist:'7',maintenanceBacklog:true,notes:'7yr into Spekulationsfrist. Rücklage low. Facade needs work.'},
+    {name:'Studio Bonn-Beuel',address:'Siegburger Str. 33, 53229 Bonn',state:'NW',city:'Bonn',yearBuilt:'1998',source:'Immowelt',imageUrl:'https://images.pexels.com/photos/1974596/pexels-photo-1974596.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'145000',area:'32',grunderwerbsteuer:'6.5',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'620',warmRent:'750',rentType:'cold',tenanted:'yes',mietpreisbremse:true,hausgeld:'155',umlagefaehig:'65',ruecklage:'6200',energy:'C',spekfrist:'0',maintenanceBacklog:false,notes:'Small but high yield. Good transport links. MPB applies.'},
+    {name:'Maisonette Freiburg-Stühlinger',address:'Basler Str. 55, 79100 Freiburg im Breisgau',state:'BW',city:'Freiburg im Breisgau',yearBuilt:'1910',source:'Engel & Völkers',imageUrl:'https://images.pexels.com/photos/19344325/pexels-photo-19344325.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'395000',area:'88',grunderwerbsteuer:'5.0',notarkosten:'2.0',maklergebuehr:'3.57',coldRent:'1320',warmRent:'',rentType:'cold',tenanted:'yes',mietpreisbremse:true,hausgeld:'275',umlagefaehig:'62',ruecklage:'16500',energy:'C',spekfrist:'0',maintenanceBacklog:false,notes:'Charming Altbau. University area — strong rental demand.'},
+    {name:'2-Zimmer Neubau Mainz-Neustadt',address:'Rheinallee 14, 55116 Mainz',state:'RP',city:'Mainz',yearBuilt:'2020',source:'Deutsche Bank Immo',imageUrl:'https://images.pexels.com/photos/16974648/pexels-photo-16974648.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'340000',area:'56',grunderwerbsteuer:'5.0',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'1100',warmRent:'1290',rentType:'cold',tenanted:'no',mietpreisbremse:true,hausgeld:'290',umlagefaehig:'70',ruecklage:'22000',energy:'B',spekfrist:'0',maintenanceBacklog:false,notes:'Riverside area. Vacant, ready to let. Energy efficient.'}
+  ];
+  // Only add properties not already in the list (deduplicate by name)
+  const existingNames=new Set(listings.map(l=>l.name));
+  const toAdd=newSamples.filter(s=>!existingNames.has(s.name)).map(s=>({...s,id:crypto.randomUUID(),createdAt:ts,updatedAt:ts}));
+  if(!toAdd.length){alert('All sample properties are already in your list.');return;}
+  listings=[...listings,...toAdd];
+  persist();render();
+  alert(`Added ${toAdd.length} new propert${toAdd.length===1?'y':'ies'}.`);
+}
+
+document.getElementById('f_rentType').addEventListener('change',calcYieldPreview);
+if(!listings.length){
+  const ts=new Date().toISOString();
+  listings=[
+    {id:crypto.randomUUID(),name:'3-Zimmer Altbau Prenzlauer Berg',address:'Schönhauser Allee 45, 10437 Berlin',state:'BE',city:'Berlin',yearBuilt:'1908',source:'ImmoScout24',imageUrl:'https://images.pexels.com/photos/12445995/pexels-photo-12445995.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'480000',area:'82',grunderwerbsteuer:'6.0',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'1400',warmRent:'1680',rentType:'cold',tenanted:'yes',mietpreisbremse:true,hausgeld:'290',umlagefaehig:'65',ruecklage:'18500',energy:'C',spekfrist:'0',maintenanceBacklog:false,notes:'Tenanted since 2019.',createdAt:ts,updatedAt:ts},
+    {id:crypto.randomUUID(),name:'2-Zimmer ETW Leipzig-Gohlis',address:'Möckernsche Str. 18, 04155 Leipzig',state:'SN',city:'Leipzig',yearBuilt:'1935',source:'Immowelt',imageUrl:'https://images.pexels.com/photos/17365410/pexels-photo-17365410.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'165000',area:'58',grunderwerbsteuer:'3.5',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'730',warmRent:'',rentType:'cold',tenanted:'yes',mietpreisbremse:false,hausgeld:'195',umlagefaehig:'60',ruecklage:'4200',energy:'E',spekfrist:'0',maintenanceBacklog:true,notes:'Facade renovation overdue.',createdAt:ts,updatedAt:ts},
+    {id:crypto.randomUUID(),name:'Neubau München-Schwabing',address:'Leopoldstraße 120, 80802 München',state:'BY',city:'München',yearBuilt:'2023',source:'Engel & Völkers',imageUrl:'https://images.pexels.com/photos/11018246/pexels-photo-11018246.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'890000',area:'68',grunderwerbsteuer:'3.5',notarkosten:'2.0',maklergebuehr:'3.57',coldRent:'2200',warmRent:'2550',rentType:'cold',tenanted:'no',mietpreisbremse:true,hausgeld:'410',umlagefaehig:'70',ruecklage:'38000',energy:'A',spekfrist:'0',maintenanceBacklog:false,notes:'Brand new. Vacant.',createdAt:ts,updatedAt:ts},
+    {id:crypto.randomUUID(),name:'1-Zimmer Hamburg-Altona',address:'Bahrenfelder Str. 77, 22765 Hamburg',state:'HH',city:'Hamburg',yearBuilt:'1980',source:'Immonet',imageUrl:'https://images.pexels.com/photos/16631149/pexels-photo-16631149.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'220000',area:'38',grunderwerbsteuer:'4.5',notarkosten:'1.5',maklergebuehr:'0',coldRent:'',warmRent:'950',rentType:'warm',tenanted:'yes',mietpreisbremse:true,hausgeld:'215',umlagefaehig:'65',ruecklage:'9000',energy:'D',spekfrist:'0',maintenanceBacklog:false,notes:'Warmmiete only.',createdAt:ts,updatedAt:ts},
+    {id:crypto.randomUUID(),name:'4-Zimmer Gründerzeit Dresden',address:'Rothenburger Str. 25, 01099 Dresden',state:'SN',city:'Dresden',yearBuilt:'1902',source:'Sparkasse Immo',imageUrl:'https://images.pexels.com/photos/20296321/pexels-photo-20296321.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'210000',area:'95',grunderwerbsteuer:'3.5',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'1050',warmRent:'',rentType:'estimate',tenanted:'no',mietpreisbremse:false,hausgeld:'265',umlagefaehig:'60',ruecklage:'14000',energy:'B',spekfrist:'0',maintenanceBacklog:false,notes:'Vacant.',createdAt:ts,updatedAt:ts},
+    {id:crypto.randomUUID(),name:'Penthouse Frankfurt-Sachsenhausen',address:'Schweizer Str. 88, 60594 Frankfurt am Main',state:'HE',city:'Frankfurt am Main',yearBuilt:'2018',source:"Christie's RE",imageUrl:'https://images.pexels.com/photos/15743372/pexels-photo-15743372.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'750000',area:'105',grunderwerbsteuer:'6.0',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'',warmRent:'',rentType:'unknown',tenanted:'unknown',mietpreisbremse:true,hausgeld:'440',umlagefaehig:'65',ruecklage:'32000',energy:'',spekfrist:'3',maintenanceBacklog:false,notes:'No rent data. 3yr into Spekulationsfrist.',createdAt:ts,updatedAt:ts}
+  ];
+  persist();
+}
+render();
+
+// ══════════════════════════════════════════
+//  SMART PASTE PARSER
+// ══════════════════════════════════════════
+function openPasteModal(){
+  document.getElementById('pasteText').value='';
+  document.getElementById('pasteResult').innerHTML='';
+  const ov=document.getElementById('pasteOverlay');
+  ov.classList.remove('hidden');requestAnimationFrame(()=>ov.classList.add('open'));
+  setTimeout(()=>document.getElementById('pasteText').focus(),250);
+}
+function closePasteModal(){
+  const ov=document.getElementById('pasteOverlay');
+  ov.classList.remove('open');setTimeout(()=>ov.classList.add('hidden'),200);
+}
+
+function _gnum(s){
+  // Convert German-formatted numbers to plain floats
+  if(!s)return '';
+  s=String(s).replace(/[€\s]/g,'').trim();
+  // 1.234.567,89 → 1234567.89
+  if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) return s.replace(/\./g,'').replace(',','.');
+  // 1234,89
+  if(/^\d+(,\d+)$/.test(s)) return s.replace(',','.');
+  return s.replace(',','.');
+}
+
+function parseListing(txt){
+  const r={};
+
+  // helper: extract number near one of the given German keywords
+  function near(kws){
+    for(const kw of kws){
+      // keyword: 1.234,56 €
+      const rx1=new RegExp(kw+'\\s*:?\\s*(?:ca\\.?\\s*)?(\\d[\\d.,]+)','i');
+      const m1=txt.match(rx1); if(m1)return _gnum(m1[1]);
+      // 1.234 € keyword
+      const rx2=new RegExp('(\\d[\\d.,]+)\\s*€?\\s*/?(Monat|mon|mtl\\.?)?\\s*'+kw,'i');
+      const m2=txt.match(rx2); if(m2)return _gnum(m2[1]);
+    }
+    return '';
+  }
+
+  // ── Kaufpreis ──
+  r.price=near(['Kaufpreis','Preis','Angebotspreis','Verkaufspreis','Gesamtpreis']);
+  if(!r.price){
+    const m=txt.match(/(\d{2,3}(?:\.\d{3})+(?:,\d+)?)\s*€/);
+    if(m)r.price=_gnum(m[1]);
+  }
+
+  // ── Wohnfläche ──
+  const aM=txt.match(/(?:Wohnfl[äa]che|Fl[äa]che|Nutzfl[äa]che)[^\d]*([\d]+(?:[.,]\d+)?)\s*m[²2]/i)
+           ||txt.match(/([\d]+(?:[.,]\d+)?)\s*m[²2]\s*(?:Wohnfl[äa]che|Fl[äa]che)/i)
+           ||txt.match(/ca\.?\s*([\d]+(?:[.,]\d+)?)\s*m[²2]/i);
+  if(aM)r.area=_gnum(aM[1]);
+
+  // ── Baujahr ──
+  const yM=txt.match(/(?:Baujahr|Bj\.?|erbaut|errichtet)\s*:?\s*(1[89]\d{2}|20[012]\d)/i);
+  if(yM)r.yearBuilt=yM[1];
+
+  // ── Kaltmiete ──
+  r.coldRent=near(['Kaltmiete','Nettokaltmiete','Nettomiete','Grundmiete','Kaltmiete/Monat']);
+
+  // ── Warmmiete ──
+  r.warmRent=near(['Warmmiete','Gesamtmiete','Bruttomiete','Warmmiete/Monat']);
+
+  // ── Rent type ──
+  if(r.coldRent)r.rentType='cold';
+  else if(r.warmRent)r.rentType='warm';
+
+  // ── Hausgeld ──
+  r.hausgeld=near(['Hausgeld','Wohngeld','Nebenkosten\\s*\\(NK\\)','Betriebskosten']);
+
+  // ── Rücklage ──
+  r.ruecklage=near(['Instandhaltungsr[üu]cklage','R[üu]cklage','Erhaltungsr[üu]cklage','Sammelr[üu]cklage','Ansammlungsr[üu]cklage']);
+
+  // ── Energieklasse ──
+  const eM=txt.match(/(?:Energieeffizienzklasse|Energieklasse|EEK|Klasse)\s*:?\s*([A-G]\+?)/i);
+  if(eM)r.energy=eM[1].toUpperCase();
+
+  // ── Maklergebühr ──
+  const mkM=txt.match(/(?:Provision|Courtage|Maklergebühr|Maklercourtage|Käufercourtage|Vermittlungsprovision)\s*:?\s*(\d+[.,]\d+)\s*%/i);
+  if(mkM)r.maklergebuehr=mkM[1].replace(',','.');
+  if(!r.maklergebuehr&&/provisionsfrei|keine\s+provision|ohne\s+courtage/i.test(txt))r.maklergebuehr='0';
+
+  // ── Tenancy ──
+  if(/\bvermietet\b|\bDauermieter\b|\bMietverh[äa]ltnis\b|\bbestehendes\s+Mietverh/i.test(txt))r.tenanted='yes';
+  else if(/\bbezugsfrei\b|\bLeerstand\b|\bleerstehend\b|\bfrei\s+(?:ab|zum|sofort)\b|\bselbstnutzung\b|\bnach\s+Vereinbarung/i.test(txt))r.tenanted='no';
+
+  // ── Spekulationsfrist ──
+  const spM=txt.match(/Spekulationsfrist\s*:?\s*(\d+)\s*Jahr/i);
+  if(spM)r.spekfrist=spM[1];
+  if(/Spekulationsfrist\s*(?:ist\s*)?(?:abgelaufen|keine|überschritten|entfällt)/i.test(txt))r.spekfrist='0';
+
+  // ── Maintenance backlog ──
+  if(/Sanierungsstau|Renovierungsbedarf|Modernisierungsbedarf|renovierungsbed[üu]rftig|sanierungsbed[üu]rftig|Instandsetzungsbedarf/i.test(txt))r.maintenanceBacklog=true;
+
+  // ── Address ──
+  const adM=txt.match(/([A-ZÄÖÜ][a-zäöüß\-]+(straße|strasse|str\.|weg|allee|platz|ring|gasse|damm|chaussee|ufer|pfad|promenade)\s*\d+[a-z]?(?:[-–]\d+)?(?:,\s*\d{5}\s+[A-ZÄÖÜa-zäöüß\- ]+)?)/i);
+  if(adM)r.address=adM[1].trim();
+
+  // ── City from PLZ ──
+  const plzM=txt.match(/\b(\d{5})\s+([A-ZÄÖÜ][a-zäöüß\-]+(?:\s+[A-ZÄÖÜ][a-zäöüß\-]+)*)/);
+  if(plzM){r.detectedCity=plzM[2].split(/\s+/).slice(0,2).join(' ');}
+
+  // ── Notes: grab Beschreibung block ──
+  const notesM=txt.match(/(?:Beschreibung|Objektbeschreibung|Zur\s+Immobilie)[^\n]*\n([\s\S]{30,600}?)(?:\n{2,}|\n[A-Z])/i);
+  if(notesM)r.notes=notesM[1].trim().replace(/\n+/g,' ').slice(0,400);
+
+  // ── Property name ──
+  const zM=txt.match(/(\d+(?:[,.]\d+)?(?:\s*[-–]\s*\d+(?:[,.]\d+)?)?)-?\s*Zimmer(?:-Wohnung|-Apartment|-ETW|-Haus)?(?:[^\n]{0,60})?/i);
+  if(zM){
+    r.name=zM[0].replace(/\s+/g,' ').trim().slice(0,80);
+    if(r.detectedCity&&!r.name.toLowerCase().includes(r.detectedCity.toLowerCase()))
+      r.name+=' '+r.detectedCity;
+  }
+  if(!r.name){
+    const lines=txt.split('\n').map(l=>l.trim()).filter(l=>l.length>5&&l.length<100&&!/^https?:/i.test(l));
+    if(lines[0])r.name=lines[0].slice(0,80);
+  }
+
+  return r;
+}
+
+function applyParsed(){
+  const txt=document.getElementById('pasteText').value.trim();
+  if(!txt){alert('Please paste some listing text first.');return;}
+  const r=parseListing(txt);
+  const meaningful=['price','area','yearBuilt','coldRent','warmRent','hausgeld','ruecklage','energy','maklergebuehr','tenanted','address','name'];
+  const found=meaningful.filter(k=>r[k]&&r[k]!=='');
+  const resEl=document.getElementById('pasteResult');
+  if(!found.length){
+    resEl.innerHTML='<span style="color:var(--yellow)">⚠ Could not extract data — try selecting more text from the listing page, including price, area, and rent details.</span>';
+    return;
+  }
+  resEl.innerHTML=`<span style="color:var(--green)">✓ Extracted ${found.length} field${found.length!==1?'s':''}: ${found.join(', ')}</span>`;
+
+  closePasteModal();
+  setTimeout(()=>{
+    openModal(null);
+    setTimeout(()=>{
+      const s=(id,val)=>{if(val===undefined||val===null||val==='')return;const e=document.getElementById(id);if(!e)return;if(e.type==='checkbox')e.checked=!!val;else e.value=val;};
+      s('f_name',r.name);s('f_address',r.address);s('f_price',r.price);s('f_area',r.area);
+      s('f_year',r.yearBuilt);s('f_coldRent',r.coldRent);s('f_warmRent',r.warmRent);
+      s('f_rentType',r.rentType);s('f_hausgeld',r.hausgeld);s('f_ruecklage',r.ruecklage);
+      s('f_energy',r.energy);s('f_makler',r.maklergebuehr);
+      s('f_tenanted',r.tenanted||'unknown');s('f_spekfrist',r.spekfrist);
+      if(r.maintenanceBacklog)document.getElementById('f_backlog').checked=true;
+      if(r.notes)s('f_notes',r.notes);
+      // Match city dropdown
+      if(r.detectedCity){
+        const cityEl=document.getElementById('f_city');
+        if(cityEl){
+          const opts=[...cityEl.options].map(o=>({val:o.value,low:o.value.toLowerCase()}));
+          const dc=r.detectedCity.toLowerCase();
+          const hit=opts.find(o=>o.low===dc||o.low.startsWith(dc)||dc.startsWith(o.low));
+          if(hit){cityEl.value=hit.val;onCityChange();}
+        }
+      }
+      calcNebenkosten();calcHausgeld();calcRuecklage();calcYieldPreview();
+    },80);
+  },280);
+}
+
+
+// ══════════════════════════════════════════
+//  COMPARE FEATURE
+// ══════════════════════════════════════════
+function toggleCompare(id){
+  if(compareSet.has(id)){compareSet.delete(id);}
+  else{
+    if(compareSet.size>=4){alert('You can compare up to 4 properties at once.');return;}
+    compareSet.add(id);
+  }
+  render();
+  updateCompareBar();
+}
+
+function clearCompare(){compareSet.clear();render();updateCompareBar();}
+
+function updateCompareBar(){
+  const bar=document.getElementById('compareBar');
+  const count=compareSet.size;
+  document.getElementById('compareCount').textContent=count;
+  // Render thumbs
+  const sel=[...compareSet].map(id=>listings.find(l=>l.id===id)).filter(Boolean);
+  const thumbsEl=document.getElementById('compareBarThumbs');
+  const slots=4;
+  thumbsEl.innerHTML=Array.from({length:slots},(_,i)=>{
+    const l=sel[i];
+    if(l){
+      const img=l.imageUrl?`<img src="${escH(l.imageUrl)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'">`:'';
+      return `<div class="compare-thumb" title="${escH(l.name||'')}">${img}</div>`;
+    }
+    return `<div class="compare-thumb-empty"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>`;
+  }).join('');
+  if(count>=2){bar.classList.add('visible');}else{bar.classList.remove('visible');}
+}
+
+function openCompareModal(){
+  const sel=[...compareSet].map(id=>listings.find(l=>l.id===id)).filter(Boolean);
+  if(sel.length<2){alert('Select at least 2 properties to compare.');return;}
+  const allPsqms=listings.map(l=>calcMetrics(l).psqm);
+  const props=sel.map(l=>({l,m:calcMetrics(l),sc:score(l,allPsqms),fl:riskFlags(l,l._m||calcMetrics(l))}));
+
+  // Build rows config: [label, getter fn, formatter, higherIsBetter (null=neutral)]
+  const rows=[
+    ['Score (0–100)',       p=>p.sc,           v=>`<span class="score-chip" style="background:${scoreColor(v)}22;color:${scoreColor(v)}">${v}</span>`, true],
+    ['Kaufpreis',           p=>+p.l.price||null, v=>eur(v), false],
+    ['Wohnfläche',          p=>+p.l.area||null,  v=>v+' m²', true],
+    ['€ / sqm',             p=>p.m.psqm,         v=>eur(v), false],
+    ['Total Acquisition',   p=>p.m.totalAcqCost, v=>eur(v), false],
+    ['Bruttomietrendite',   p=>p.m.grossYield,   v=>pct(v), true],
+    ['Nettomietrendite',    p=>p.m.netYield,      v=>pct(v), true],
+    ['Kaltmiete/mo',        p=>+p.l.coldRent||null, v=>'€'+v.toLocaleString('de-DE'), true],
+    ['Hausgeld/mo',         p=>+p.l.hausgeld||null, v=>'€'+v.toLocaleString('de-DE'), false],
+    ['Non-recov. Hausgeld', p=>p.m.nonRecovHaus||null, v=>'€'+Math.round(v), false],
+    ['Instandh.-Rücklage',  p=>+p.l.ruecklage||null, v=>'€'+v.toLocaleString('de-DE'), true],
+    ['Energieklasse',       p=>p.l.energy||null, v=>eBadge(v), null],
+    ['Baujahr',             p=>+p.l.yearBuilt||null, v=>v, true],
+    ['Tenanted',            p=>p.l.tenanted,     v=>v==='yes'?'<span style="color:var(--green)">Yes</span>':v==='no'?'<span style="color:var(--muted)">No (Vacant)</span>':'Unknown', null],
+    ['Mietpreisbremse',     p=>p.l.mietpreisbremse?1:0, v=>v?'<span style="color:var(--yellow)">Applies</span>':'<span style="color:var(--muted)">No</span>', null],
+    ['Risk Flags',          p=>riskFlags(p.l,p.m).length, v=>v===0?'<span style="color:var(--green)">None</span>':`<span style="color:var(--red)">${v} flag${v!==1?'s':''}</span>`, false],
+    ['Bundesland',          p=>p.l.state,        v=>{const s=STATES.find(x=>x.code===v);return s?`${s.name} (${s.code})`:v||'—';}, null],
+    ['Source',              p=>p.l.source,       v=>v||'—', null],
+  ];
+
+  // Build header row
+  const headerCells=props.map(p=>{
+    const img=p.l.imageUrl?`<img src="${escH(p.l.imageUrl)}" class="compare-prop-img" onerror="this.style.display='none'">`:'';
+    const stObj=STATES.find(s=>s.code===p.l.state);
+    return `<th class="prop-header">
+      ${img}
+      <div class="compare-prop-name">${escH(p.l.name||'Untitled')}</div>
+      <div class="compare-prop-addr">${escH(p.l.address||'')}${stObj?` · ${stObj.code}`:''}</div>
+    </th>`;
+  }).join('');
+
+  // Build data rows
+  const dataRows=rows.map(([label,getter,fmt,hib])=>{
+    const vals=props.map(p=>getter(p));
+    // Find best/worst for numeric comparisons
+    const numVals=vals.map(v=>typeof v==='number'?v:null);
+    const hasNums=numVals.some(v=>v!==null);
+    let bestIdx=-1,worstIdx=-1;
+    if(hasNums&&hib!==null){
+      const valid=numVals.filter(v=>v!==null);
+      const best=hib?Math.max(...valid):Math.min(...valid);
+      const worst=hib?Math.min(...valid):Math.max(...valid);
+      bestIdx=numVals.indexOf(best);
+      worstIdx=numVals.lastIndexOf(worst);
+      if(bestIdx===worstIdx)worstIdx=-1; // don't mark if only one unique value
+    }
+    const cells=vals.map((v,i)=>{
+      const display=v!==null&&v!==undefined&&v!==''?fmt(v):'<span style="color:var(--muted)">—</span>';
+      const cls=i===bestIdx&&bestIdx!==worstIdx?'best':i===worstIdx&&bestIdx!==worstIdx?'worst':'';
+      return `<td class="${cls}">${display}</td>`;
+    }).join('');
+    return `<tr><td class="row-label">${label}</td>${cells}</tr>`;
+  }).join('');
+
+  document.getElementById('compareTable').innerHTML=`
+    <thead><tr><th style="background:var(--surface2);border-bottom:1px solid var(--border)">Metric</th>${headerCells}</tr></thead>
+    <tbody>${dataRows}</tbody>`;
+
+  const ov=document.getElementById('compareOverlay');
+  ov.classList.add('open');
+}
+
+function closeCompareModal(){document.getElementById('compareOverlay').classList.remove('open');}
+
+// ══════════════════════════════════════════
+//  FIND / DISCOVER FEATURE
+// ══════════════════════════════════════════
+function openFindModal(){
+  const ov=document.getElementById('findOverlay');
+  ov.classList.add('open');
+  // Pre-fill city from active filter if set
+  const fc=document.getElementById('filterCity');
+  if(fc&&fc.value)document.getElementById('find_city').value=fc.value;
+}
+function closeFindModal(){document.getElementById('findOverlay').classList.remove('open');}
+
+function openPortal(portal){
+  const city=(document.getElementById('find_city').value||'').trim();
+  const price=document.getElementById('find_price').value||'';
+  const area=document.getElementById('find_area').value||'';
+  const rooms=document.getElementById('find_rooms').value||'';
+  const type=document.getElementById('find_type').value||'wohnung';
+  const radius=document.getElementById('find_radius').value||'';
+  const citySlug=city.toLowerCase().replace(/\s+/g,'-').replace(/[äöü]/g,c=>({ä:'ae',ö:'oe',ü:'ue'})[c]||c).replace(/[^a-z0-9-]/g,'');
+  const typeMap={wohnung:'Wohnung',haus:'Haus',grundstueck:'Grundstueck'};
+
+  let url='';
+  if(portal==='immoscout'){
+    const base=`https://www.immoscout24.de/${typeMap[type]||'Wohnung'}-kaufen/${citySlug||'deutschland'}`;
+    const params=new URLSearchParams();
+    if(price)params.set('priceto',price);
+    if(area)params.set('livingspace',area);
+    if(rooms)params.set('numberofrooms',rooms+'.0');
+    if(radius)params.set('searchradius',radius);
+    url=base+(params.toString()?'?'+params.toString():'');
+  } else if(portal==='immowelt'){
+    const base=`https://www.immowelt.de/suche/${citySlug||'deutschland'}/wohnungen/kaufen`;
+    const params=new URLSearchParams();
+    if(price)params.set('priceto',price);
+    if(area)params.set('alivingspace',area);
+    if(rooms)params.set('nrooms',rooms);
+    if(radius)params.set('sr',radius||'0');
+    url=base+(params.toString()?'?'+params.toString():'');
+  } else if(portal==='immonet'){
+    url=`https://www.immonet.de/immobiliensuche/sel-kaufen-wohnung-${citySlug||'deutschland'}.html`+(price?`?preis_max=${price}`:'');
+  } else if(portal==='ebay'){
+    const q=`${type==='haus'?'Haus':'Wohnung'} kaufen${city?' '+city:''}${price?' bis '+price+' Euro':''}`;
+    url=`https://www.kleinanzeigen.de/s-immobilien/${citySlug||'deutschland'}/k0l0`;
+  } else if(portal==='sparkasse'){
+    url=`https://www.sparkasse.de/service/immobilien.html`;
+  } else if(portal==='engel'){
+    url=`https://www.engelvoelkers.com/de/search/?q=${encodeURIComponent((city||'')+(type==='wohnung'?' wohnung':' haus'))}&businessArea=residential&commercializationType=buy`;
+  }
+  if(url) window.open(url,'_blank');
+  return false;
+}
+
+</script>
+
+<!-- ══════════ COMPARE BAR ══════════ -->
+<div class="compare-bar" id="compareBar">
+  <div class="compare-bar-inner">
+    <div class="compare-bar-thumbs" id="compareBarThumbs"></div>
+    <div class="compare-bar-label"><strong id="compareCount">0</strong> selected</div>
+    <button class="btn-compare-clear" onclick="clearCompare()">Clear</button>
+    <button class="btn-compare-go" onclick="openCompareModal()">
+      <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+      Compare
+    </button>
+  </div>
+</div>
+
+<!-- ══════════ COMPARE MODAL ══════════ -->
+<div class="compare-overlay" id="compareOverlay" onclick="if(event.target===this)closeCompareModal()">
+  <div class="compare-modal" id="compareModal">
+    <div class="compare-modal-header">
+      <div style="font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+        Side-by-Side Comparison
+      </div>
+      <button class="modal-close" onclick="closeCompareModal()">✕</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="compare-table" id="compareTable"></table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ FIND MODAL ══════════ -->
+<div class="find-overlay" id="findOverlay" onclick="if(event.target===this)closeFindModal()">
+  <div class="find-modal">
+    <div class="find-modal-header">
+      <div style="font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Find Listings on Portals
+      </div>
+      <button class="modal-close" onclick="closeFindModal()">✕</button>
+    </div>
+    <div class="find-modal-body">
+      <p style="color:var(--muted);font-size:12px;margin-bottom:14px;line-height:1.6">Set your search criteria below, then click a portal to open a pre-filtered search in a new tab. Copy the listing text and use <strong style="color:var(--text2)">Smart Paste</strong> to extract the data.</p>
+      <div class="find-criteria">
+        <div class="form-group">
+          <label>City / Region</label>
+          <input type="text" id="find_city" placeholder="e.g. Berlin, München…" list="find_city_list"/>
+          <datalist id="find_city_list">
+            <option value="Berlin"/><option value="München"/><option value="Hamburg"/><option value="Frankfurt am Main"/>
+            <option value="Köln"/><option value="Stuttgart"/><option value="Düsseldorf"/><option value="Leipzig"/>
+            <option value="Dresden"/><option value="Hannover"/><option value="Nürnberg"/><option value="Bonn"/>
+            <option value="Freiburg im Breisgau"/><option value="Mainz"/><option value="Karlsruhe"/>
+          </datalist>
+        </div>
+        <div class="form-group">
+          <label>Property Type</label>
+          <select id="find_type">
+            <option value="wohnung">Wohnung (Apartment)</option>
+            <option value="haus">Haus (House)</option>
+            <option value="grundstueck">Grundstück (Land)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Price (€)</label>
+          <input type="number" id="find_price" placeholder="500000" step="10000"/>
+        </div>
+        <div class="form-group">
+          <label>Min Area (m²)</label>
+          <input type="number" id="find_area" placeholder="50" step="5"/>
+        </div>
+        <div class="form-group">
+          <label>Min Rooms</label>
+          <select id="find_rooms">
+            <option value="">Any</option>
+            <option value="1">1+</option>
+            <option value="2">2+</option>
+            <option value="3">3+</option>
+            <option value="4">4+</option>
+            <option value="5">5+</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Radius (km)</label>
+          <select id="find_radius">
+            <option value="">City only</option>
+            <option value="5">5 km</option>
+            <option value="10">10 km</option>
+            <option value="25">25 km</option>
+            <option value="50">50 km</option>
+          </select>
+        </div>
+      </div>
+      <div class="portal-grid">
+        <a class="portal-btn" onclick="openPortal('immoscout')" href="#" target="_blank">
+          <div class="portal-logo" style="background:#e8431c">IS</div>
+          <div><div style="font-size:13px;font-weight:700">ImmobilienScout24</div><div style="font-size:11px;color:var(--muted);font-weight:400">Germany's largest portal</div></div>
+        </a>
+        <a class="portal-btn" onclick="openPortal('immowelt')" href="#" target="_blank">
+          <div class="portal-logo" style="background:#0066cc">IW</div>
+          <div><div style="font-size:13px;font-weight:700">Immowelt</div><div style="font-size:11px;color:var(--muted);font-weight:400">Wide regional coverage</div></div>
+        </a>
+        <a class="portal-btn" onclick="openPortal('immonet')" href="#" target="_blank">
+          <div class="portal-logo" style="background:#00a651">IN</div>
+          <div><div style="font-size:13px;font-weight:700">Immonet</div><div style="font-size:11px;color:var(--muted);font-weight:400">Regional focus</div></div>
+        </a>
+        <a class="portal-btn" onclick="openPortal('ebay')" href="#" target="_blank">
+          <div class="portal-logo" style="background:#e53238">ek</div>
+          <div><div style="font-size:13px;font-weight:700">eBay Kleinanzeigen</div><div style="font-size:11px;color:var(--muted);font-weight:400">Direct from owners</div></div>
+        </a>
+        <a class="portal-btn" onclick="openPortal('sparkasse')" href="#" target="_blank">
+          <div class="portal-logo" style="background:#cc0000">SP</div>
+          <div><div style="font-size:13px;font-weight:700">Sparkasse Immo</div><div style="font-size:11px;color:var(--muted);font-weight:400">Bank-backed listings</div></div>
+        </a>
+        <a class="portal-btn" onclick="openPortal('engel')" href="#" target="_blank">
+          <div class="portal-logo" style="background:#1a1a2e">EV</div>
+          <div><div style="font-size:13px;font-weight:700">Engel &amp; Völkers</div><div style="font-size:11px;color:var(--muted);font-weight:400">Premium segment</div></div>
+        </a>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5">After opening a listing, select all text (Ctrl+A / Cmd+A), copy, then use <strong style="color:var(--accent)">Smart Paste</strong> to extract fields automatically.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
