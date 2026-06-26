@@ -295,12 +295,122 @@ tbody td{padding:11px 14px;vertical-align:middle}
 .find-criteria input,.find-criteria select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);padding:7px 10px;font-size:12px;font-family:inherit;outline:none}
 .find-criteria input:focus,.find-criteria select:focus{border-color:var(--accent)}
 
+
+/* ══════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ══════════════════════════════════════════ */
+
+/* Hamburger button — hidden on desktop */
+.menu-toggle{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px;flex-shrink:0}
+.menu-toggle svg{width:20px;height:20px}
+
+/* Sidebar overlay backdrop */
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:98;backdrop-filter:blur(2px)}
+.sidebar-backdrop.open{display:block}
+
+@media(max-width:768px){
+  /* ── Layout ── */
+  body{flex-direction:column;height:auto;overflow:auto}
+
+  /* ── Sidebar: slide-in drawer ── */
+  .sidebar{
+    position:fixed;left:-260px;top:0;bottom:0;z-index:99;
+    width:260px;height:100vh;
+    transition:left .25s cubic-bezier(.4,0,.2,1);
+    box-shadow:var(--shadow-lg)
+  }
+  .sidebar.open{left:0}
+  .menu-toggle{display:flex}
+
+  /* ── Main fills screen ── */
+  .main{flex:1;min-height:100vh;overflow:visible}
+
+  /* ── Topbar ── */
+  .topbar{padding:10px 14px;gap:8px;flex-wrap:wrap}
+  .search-wrap{max-width:100%;flex:1;min-width:0;order:2;width:100%}
+  .view-btns{order:3;margin-left:0}
+  .topbar>button{font-size:11px;padding:6px 10px}
+  .topbar>button span.btn-label{display:none} /* hide text labels on very small screens */
+
+  /* ── Stats strip: 2x3 grid ── */
+  .stats-strip{flex-wrap:wrap}
+  .stat-box{flex:1 1 calc(50% - 1px);min-width:0}
+  .stat-box .sb-val{font-size:16px}
+
+  /* ── Cards: single column ── */
+  .cards-grid{grid-template-columns:1fr;gap:12px}
+  .content{padding:14px}
+
+  /* ── Table: horizontal scroll ── */
+  #tableView{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ── Modals: full screen ── */
+  .overlay{padding:0;align-items:flex-end}
+  .modal{
+    max-width:100%;max-height:92vh;
+    border-radius:20px 20px 0 0;
+    border-bottom:none
+  }
+  .modal-header{border-radius:20px 20px 0 0}
+  .modal-body{padding:16px}
+  .modal-footer{padding:12px 16px}
+
+  /* ── Form grids: single column ── */
+  .form-grid,.form-grid.thirds{grid-template-columns:1fr}
+  .form-full{grid-column:1}
+
+  /* ── Compare bar ── */
+  .compare-bar{bottom:-100px;padding:0 10px}
+  .compare-bar.visible{bottom:12px}
+  .compare-bar-inner{padding:10px 12px;gap:10px;border-radius:12px}
+  .btn-compare-go span,.btn-compare-clear span{display:none}
+  .compare-bar-label{font-size:11px}
+
+  /* ── Compare modal ── */
+  .compare-overlay{padding:0;align-items:flex-end}
+  .compare-modal{max-width:100%;border-radius:20px 20px 0 0;max-height:90vh}
+  .compare-modal-header{border-radius:20px 20px 0 0}
+
+  /* ── Find modal ── */
+  .find-overlay{padding:0;align-items:flex-end}
+  .find-modal{max-width:100%;border-radius:20px 20px 0 0}
+  .find-modal-header{border-radius:20px 20px 0 0}
+  .find-criteria{grid-template-columns:1fr}
+  .portal-grid{grid-template-columns:1fr}
+
+  /* ── Paste modal ── */
+  .compare-overlay.paste-mode{padding:0;align-items:flex-end}
+
+  /* ── Cards: adjust image height ── */
+  .card-img-wrap{height:160px}
+
+  /* ── Yield row ── */
+  .yield-row{flex-direction:row;gap:8px}
+  .yield-box{padding:8px 10px}
+  .yield-val{font-size:18px}
+
+  /* ── Metrics grid ── */
+  .metrics{grid-template-columns:repeat(2,1fr)}
+
+  /* ── Flags ── */
+  .flags{padding:8px 12px;gap:4px}
+}
+
+@media(max-width:420px){
+  .stat-box{flex:1 1 100%}
+  .topbar{gap:6px}
+  .card-img-wrap{height:140px}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .view-btns button svg + *{display:none}
+}
+
 </style>
 </head>
 <body>
 
 <!-- ══════════ SIDEBAR ══════════ -->
-<aside class="sidebar">
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
   <div class="logo">
     <div class="logo-icon">
       <svg fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -310,13 +420,13 @@ tbody td{padding:11px 14px;vertical-align:middle}
 
   <button class="btn-add" onclick="openModal()">
     <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Add Property
+    <span data-i18n="addProperty">Add Property</span>
   </button>
 
   <div class="sidebar-divider"></div>
 
   <div class="filter-group">
-    <span class="filter-label">Sort by</span>
+    <span class="filter-label" data-i18n="sortBy">Sort by</span>
     <select id="sortSelect" onchange="render()">
       <option value="score">Score ↓</option>
       <option value="yield">Gross Yield ↓</option>
@@ -328,7 +438,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
   </div>
 
   <div class="filter-group">
-    <span class="filter-label">Energy class</span>
+    <span class="filter-label" data-i18n="energyClass">Energy Class</span>
     <select id="filterEnergy" onchange="render()">
       <option value="">All</option>
       <option>A+</option><option>A</option><option>B</option><option>C</option>
@@ -337,36 +447,36 @@ tbody td{padding:11px 14px;vertical-align:middle}
   </div>
 
   <div class="filter-group">
-    <span class="filter-label">Risk</span>
+    <span class="filter-label" data-i18n="risk">Risk</span>
     <select id="filterRisk" onchange="render()">
-      <option value="">All listings</option>
-      <option value="risks">Has risk flags</option>
-      <option value="clean">Clean (no flags)</option>
+      <option value="" data-i18n="allListings">All listings</option>
+      <option value="risks" data-i18n="hasRisks">Has risk flags</option>
+      <option value="clean" data-i18n="clean">Clean (no flags)</option>
       <option value="mpb">Mietpreisbremse</option>
     </select>
   </div>
 
   <div class="filter-group">
-    <span class="filter-label">State (Bundesland)</span>
+    <span class="filter-label" data-i18n="stateBundesland">State (Bundesland)</span>
     <select id="filterState" onchange="render()">
       <option value="">All states</option>
     </select>
   </div>
 
   <div class="filter-group">
-    <span class="filter-label">City</span>
+    <span class="filter-label" data-i18n="city">City</span>
     <select id="filterCity" onchange="render()">
       <option value="">All cities</option>
     </select>
   </div>
 
   <div class="sidebar-divider"></div>
-  <div class="sidebar-label" style="padding:0 18px">Portfolio</div>
-  <div class="mini-stat"><span class="ms-label">Listings</span><span class="ms-val" id="sbCount">0</span></div>
-  <div class="mini-stat"><span class="ms-label">Avg. gross yield</span><span class="ms-val" id="sbYield">—</span></div>
-  <div class="mini-stat"><span class="ms-label">Avg. net yield</span><span class="ms-val" id="sbNetYield">—</span></div>
-  <div class="mini-stat"><span class="ms-label">Avg. €/sqm</span><span class="ms-val" id="sbPsqm">—</span></div>
-  <div class="mini-stat"><span class="ms-label">With risk flags</span><span class="ms-val" id="sbRisks">—</span></div>
+  <div class="sidebar-label" style="padding:0 18px" data-i18n="portfolio">Portfolio</div>
+  <div class="mini-stat"><span class="ms-label" data-i18n="miniListings">Listings</span><span class="ms-val" id="sbCount">0</span></div>
+  <div class="mini-stat"><span class="ms-label" data-i18n="miniGross">Avg. gross yield</span><span class="ms-val" id="sbYield">—</span></div>
+  <div class="mini-stat"><span class="ms-label" data-i18n="miniNet">Avg. net yield</span><span class="ms-val" id="sbNetYield">—</span></div>
+  <div class="mini-stat"><span class="ms-label" data-i18n="miniPsqm">Avg. €/sqm</span><span class="ms-val" id="sbPsqm">—</span></div>
+  <div class="mini-stat"><span class="ms-label" data-i18n="miniRisks">With risk flags</span><span class="ms-val" id="sbRisks">—</span></div>
 
   <div class="sidebar-bottom">
     <button class="sample-btn" onclick="loadSampleData()">Load sample data</button>
@@ -377,41 +487,48 @@ tbody td{padding:11px 14px;vertical-align:middle}
 <div class="main">
   <!-- topbar -->
   <div class="topbar">
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <div class="search-wrap">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" id="searchInput" placeholder="Search properties, addresses…" oninput="render()"/>
+      <input type="text" id="searchInput" placeholder="Search properties, addresses…" data-i18n="searchPlaceholder" oninput="render()"/>
     </div>
     <button onclick="openFindModal()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:var(--r-sm);padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Find Listings
+      <span data-i18n="findListings">Find Listings</span>
     </button>
     <button onclick="openPasteModal()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:var(--r-sm);padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-      Smart Paste
+      <span data-i18n="smartPaste">Smart Paste</span>
     </button>
     <button onclick="loadSampleData()" style="background:linear-gradient(135deg,#4f46e5,#818cf8);color:#fff;border:none;border-radius:var(--r-sm);padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:6px;box-shadow:0 0 16px rgba(129,140,248,.35);letter-spacing:.2px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.29"/></svg>
-      Load Sample Data
+      <span data-i18n="loadSample">Load Sample Data</span>
     </button>
     <div class="view-btns">
       <button id="btnCards" class="active" onclick="setView('cards')">
         <svg fill="currentColor" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-        Cards
+        <span data-i18n="cards">Cards</span>
       </button>
       <button id="btnTable" onclick="setView('table')">
         <svg fill="currentColor" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
-        Table
+        <span data-i18n="table">Table</span>
       </button>
+    </div>
+    <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:2px;gap:2px;flex-shrink:0">
+      <button id="langBtn_en" onclick="setLang('en')" style="padding:5px 9px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;background:var(--accent-d);color:#fff">EN</button>
+      <button id="langBtn_de" onclick="setLang('de')" style="padding:5px 9px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;background:transparent;color:var(--muted)">DE</button>
     </div>
   </div>
 
   <!-- stats strip -->
   <div class="stats-strip">
-    <div class="stat-box"><div class="sb-label">Total Listings</div><div class="sb-val" id="stCount">0</div></div>
-    <div class="stat-box"><div class="sb-label">Best Score</div><div class="sb-val" id="stTop">—</div></div>
-    <div class="stat-box"><div class="sb-label">Avg Gross Yield</div><div class="sb-val" id="stYield">—</div></div>
-    <div class="stat-box"><div class="sb-label">Avg Net Yield</div><div class="sb-val" id="stNet">—</div></div>
-    <div class="stat-box"><div class="sb-label">Avg €/sqm</div><div class="sb-val" id="stPsqm">—</div></div>
+    <div class="stat-box"><div class="sb-label" data-i18n="totalListings">Total Listings</div><div class="sb-val" id="stCount">0</div></div>
+    <div class="stat-box"><div class="sb-label" data-i18n="bestScore">Best Score</div><div class="sb-val" id="stTop">—</div></div>
+    <div class="stat-box"><div class="sb-label" data-i18n="avgGrossYield">Avg Gross Yield</div><div class="sb-val" id="stYield">—</div></div>
+    <div class="stat-box"><div class="sb-label" data-i18n="avgNetYield">Avg Net Yield</div><div class="sb-val" id="stNet">—</div></div>
+    <div class="stat-box"><div class="sb-label" data-i18n="avgPsqm">Avg €/sqm</div><div class="sb-val" id="stPsqm">—</div></div>
   </div>
 
   <!-- content -->
@@ -453,7 +570,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
     <div class="modal-header">
       <div class="modal-title" style="display:flex;align-items:center;gap:8px">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-        Smart Paste — Extract from Listing
+        <span data-i18n="pasteTitle">Smart Paste — Extract from Listing</span>
       </div>
       <button class="modal-close" onclick="closePasteModal()">✕</button>
     </div>
@@ -463,10 +580,10 @@ tbody td{padding:11px 14px;vertical-align:middle}
       <div id="pasteResult" style="margin-top:10px;min-height:22px;font-size:12px"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" onclick="closePasteModal()">Cancel</button>
+      <button class="btn-secondary" onclick="closePasteModal()" data-i18n="cancel">Cancel</button>
       <button class="btn-primary" onclick="applyParsed()" style="display:flex;align-items:center;gap:7px">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        Extract &amp; Fill Form
+        <span data-i18n="extractBtn">Extract &amp; Fill Form</span>
       </button>
     </div>
   </div>
@@ -732,7 +849,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
       <div class="form-section-title">Risk Factors &amp; Details</div>
       <div class="form-grid">
         <div class="form-group">
-          <label>Energy Class (Energieklasse)</label>
+          <label data-i18n="energieklasse">Energy Class</label>
           <select id="f_energy">
             <option value="">Unknown</option>
             <option>A+</option><option>A</option><option>B</option><option>C</option>
@@ -758,7 +875,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
   </div>
   <div class="modal-footer">
     <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="saveListing()">Save Property</button>
+    <button class="btn btn-primary" onclick="saveListing()" data-i18n="save">Save Property</button>
   </div>
  </div>
 </div>
@@ -823,6 +940,170 @@ stateSelects.forEach(id => {
 let listings = JSON.parse(localStorage.getItem('re_radar_v3') || '[]');
 let editId = null;
 let compareSet = new Set();
+
+// ══════════════════════════════════════════
+//  i18n — English / German
+// ══════════════════════════════════════════
+const LANG = {
+  en: {
+    // Sidebar
+    addProperty:'Add Property', sortBy:'Sort by', energyClass:'Energy Class',
+    risk:'Risk', allListings:'All listings', hasRisks:'Has risks',
+    clean:'Clean', mpbOnly:'MPB only', stateBundesland:'State (Bundesland)',
+    allStates:'All states', city:'City', allCities:'All cities',
+    portfolio:'Portfolio', listings:'Listings', avgGross:'Avg. gross yield',
+    avgNet:'Avg. net yield', loadSample:'Load Sample Data',
+    sortScore:'Score ↓', sortYield:'Gross Yield ↓', sortNetYield:'Net Yield ↓',
+    sortPrice:'Price ↓', sortPsqm:'Price/sqm ↓', sortName:'Name A→Z',
+    allEnergy:'All', allRisk:'All listings', allStates:'All states', allCities:'All cities',
+    // Topbar
+    findListings:'Find Listings', smartPaste:'Smart Paste',
+    searchPlaceholder:'Search properties, addresses…',
+    cards:'Cards', table:'Table',
+    // Stats strip
+    totalListings:'Total Listings', bestScore:'Best Score',
+    avgGrossYield:'Avg Gross Yield', avgNetYield:'Avg Net Yield', avgPsqm:'Avg €/sqm',
+    // Card labels
+    grossYield:'Gross Yield', netYield:'Net Yield',
+    kaufpreis:'Purchase Price', wohnflaeche:'Living Area',
+    psqm:'€/sqm', totalCost:'Total Cost',
+    energieklasse:'Energy Class', hausgeld:'Service Charge',
+    edit:'✎ Edit', del:'🗑 Delete',
+    kaltmieteOnly:'Kaltmiete · yield basis',
+    afterNonRecov:'after non-recov. charges',
+    noAddress:'No address',
+    // Risk flags (abbreviated)
+    noRent:'No rent data', warmOnly:'Warm rent only', lowYield:'Low yield',
+    noEnergy:'No energy class', backlog:'Maintenance backlog',
+    spekfrist:'In Spekulationsfrist', lowRuecklage:'Low Rücklage',
+    // Empty state
+    emptyTitle:'No properties yet', emptyBody:'Add a property or load sample data to get started.',
+    // Modal
+    addPropertyTitle:'Add Property', editPropertyTitle:'Edit Property',
+    cancel:'Cancel', save:'Save Property',
+    sectionPropInfo:'Property Info', sectionPurchase:'Purchase Costs',
+    sectionRent:'Rent & Income', sectionRunning:'Running Costs',
+    sectionCompliance:'Compliance & Risk',
+    // Find modal
+    findTitle:'Find Listings on Portals',
+    findDesc:'Set your search criteria, then launch a pre-filtered search on your chosen portal.',
+    findCity:'City / Region', findType:'Property Type',
+    findMaxPrice:'Max Price (€)', findMinArea:'Min Area (m²)',
+    findMinRooms:'Min Rooms', findRadius:'Radius (km)',
+    findAny:'Any', findCityOnly:'City only',
+    findApartment:'Apartment (Wohnung)', findHouse:'House (Haus)', findLand:'Land (Grundstück)',
+    findTip:'After opening a listing, select all text, copy, then use Smart Paste to extract fields.',
+    // Paste modal
+    pasteTitle:'Smart Paste — Extract from Listing',
+    pasteDesc:'Copy everything from a listing page and paste below. The parser extracts price, area, rent, energy class, and more.',
+    pastePlaceholder:'Paste full listing text here…',
+    extractBtn:'Extract & Fill Form',
+    // Compare
+    compareTitle:'Side-by-Side Comparison',
+    compareSelected:'selected',
+    compareClear:'Clear',
+    compareBtn:'Compare',
+    // Mini stats
+    miniListings:'Listings', miniGross:'Avg. gross yield', miniNet:'Avg. net yield', miniPsqm:'Avg. €/sqm', miniRisks:'With risk flags',
+  },
+  de: {
+    // Sidebar
+    addProperty:'Immobilie hinzufügen', sortBy:'Sortieren nach', energyClass:'Energieklasse',
+    risk:'Risiko', allListings:'Alle Objekte', hasRisks:'Mit Risiken',
+    clean:'Ohne Risiken', mpbOnly:'Nur MPB', stateBundesland:'Bundesland',
+    allStates:'Alle Bundesländer', city:'Stadt', allCities:'Alle Städte',
+    portfolio:'Portfolio', listings:'Objekte', avgGross:'Ø Bruttorendite',
+    avgNet:'Ø Nettorendite', loadSample:'Beispieldaten laden',
+    sortScore:'Bewertung ↓', sortYield:'Bruttorendite ↓', sortNetYield:'Nettorendite ↓',
+    sortPrice:'Preis ↓', sortPsqm:'Preis/m² ↓', sortName:'Name A→Z',
+    allEnergy:'Alle', allRisk:'Alle Objekte', allStates:'Alle Bundesländer', allCities:'Alle Städte',
+    // Topbar
+    findListings:'Objekte suchen', smartPaste:'Smart Paste',
+    searchPlaceholder:'Objekte, Adressen suchen…',
+    cards:'Kacheln', table:'Tabelle',
+    // Stats strip
+    totalListings:'Objekte gesamt', bestScore:'Bester Score',
+    avgGrossYield:'Ø Bruttorendite', avgNetYield:'Ø Nettorendite', avgPsqm:'Ø €/m²',
+    // Card labels
+    grossYield:'Bruttomietrendite', netYield:'Nettomietrendite',
+    kaufpreis:'Kaufpreis', wohnflaeche:'Wohnfläche',
+    psqm:'€/m²', totalCost:'Gesamtkosten',
+    energieklasse:'Energieklasse', hausgeld:'Hausgeld',
+    edit:'✎ Bearbeiten', del:'🗑 Löschen',
+    kaltmieteOnly:'Kaufpreis · Kaltmiete',
+    afterNonRecov:'nach nicht umlagef. Anteil',
+    noAddress:'Keine Adresse',
+    // Risk flags
+    noRent:'Keine Mietdaten', warmOnly:'Nur Warmmiete', lowYield:'Niedrige Rendite',
+    noEnergy:'Kein Energieausweis', backlog:'Sanierungsstau',
+    spekfrist:'In Spekulationsfrist', lowRuecklage:'Rücklage niedrig',
+    // Empty state
+    emptyTitle:'Noch keine Objekte', emptyBody:'Fügen Sie ein Objekt hinzu oder laden Sie Beispieldaten.',
+    // Modal
+    addPropertyTitle:'Immobilie hinzufügen', editPropertyTitle:'Immobilie bearbeiten',
+    cancel:'Abbrechen', save:'Objekt speichern',
+    sectionPropInfo:'Objektinformationen', sectionPurchase:'Kaufnebenkosten',
+    sectionRent:'Mieteinnahmen', sectionRunning:'Laufende Kosten',
+    sectionCompliance:'Compliance & Risiken',
+    // Find modal
+    findTitle:'Objekte auf Portalen suchen',
+    findDesc:'Suchkriterien festlegen und eine gefilterte Suche auf dem gewünschten Portal starten.',
+    findCity:'Stadt / Region', findType:'Objekttyp',
+    findMaxPrice:'Max. Preis (€)', findMinArea:'Min. Fläche (m²)',
+    findMinRooms:'Min. Zimmer', findRadius:'Umkreis (km)',
+    findAny:'Beliebig', findCityOnly:'Nur Stadtgebiet',
+    findApartment:'Wohnung', findHouse:'Haus', findLand:'Grundstück',
+    findTip:'Nach dem Öffnen eines Inserats alles auswählen, kopieren und Smart Paste verwenden.',
+    // Paste modal
+    pasteTitle:'Smart Paste — Aus Inserat extrahieren',
+    pasteDesc:'Gesamten Text eines Inserats kopieren und unten einfügen. Der Parser extrahiert Preis, Fläche, Miete, Energieklasse u.v.m.',
+    pastePlaceholder:'Inserattext hier einfügen…',
+    extractBtn:'Extrahieren & Formular füllen',
+    // Compare
+    compareTitle:'Vergleich nebeneinander',
+    compareSelected:'ausgewählt',
+    compareClear:'Zurücksetzen',
+    compareBtn:'Vergleichen',
+    // Mini stats
+    miniListings:'Objekte', miniGross:'Ø Bruttorendite', miniNet:'Ø Nettorendite', miniPsqm:'Ø €/m²', miniRisks:'Mit Risikoflaggen',
+  }
+};
+
+let currentLang = localStorage.getItem('re_lang') || 'en';
+function t(key){ return (LANG[currentLang]||LANG.en)[key] || (LANG.en)[key] || key; }
+
+function applyLang(){
+  // Static elements via data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    if(el.tagName==='INPUT'&&el.hasAttribute('placeholder'))el.placeholder=t(k);
+    else if(el.tagName==='OPTION')el.textContent=t(k);
+    else el.textContent=t(k);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+    el.innerHTML=t(el.getAttribute('data-i18n-html'));
+  });
+  // Translate dynamic filter selects
+  const fe=document.getElementById('filterEnergy');
+  if(fe&&fe.options[0])fe.options[0].textContent=t('allEnergy');
+  const fs=document.getElementById('filterState');
+  if(fs&&fs.options[0])fs.options[0].textContent=t('allStates');
+  // filterCity is rebuilt by refreshCityFilter, handle there
+  // Sort select options
+  const ss=document.getElementById('sortSelect');
+  if(ss){const map={score:'sortScore',yield:'sortYield',netyield:'sortNetYield',price:'sortPrice',psqm:'sortPsqm',name:'sortName'};[...ss.options].forEach(o=>{if(map[o.value])o.textContent=t(map[o.value]);});}
+  // Language toggle button states
+  ['en','de'].forEach(l=>{
+    const btn=document.getElementById('langBtn_'+l);
+    if(btn)btn.style.background=l===currentLang?'var(--accent-d)':'transparent';
+    if(btn)btn.style.color=l===currentLang?'#fff':'var(--muted)';
+  });
+  localStorage.setItem('re_lang',currentLang);
+  render();
+}
+
+function setLang(l){currentLang=l;applyLang();}
+
 let currentView = 'cards';
 
 function persist(){ localStorage.setItem('re_radar_v3', JSON.stringify(listings)); }
@@ -943,7 +1224,7 @@ function refreshCityFilter(){
   if(!sel)return;
   const cur=sel.value;
   const cities=[...new Set(listings.map(l=>l.city).filter(Boolean))].sort();
-  sel.innerHTML='<option value="">All cities</option>'+cities.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('');
+  sel.innerHTML=`<option value="">${t('allCities')}</option>`+cities.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('');
 }
 
 function render(){
@@ -1002,9 +1283,10 @@ function renderCards(data){
       <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
     </button>
     <div class="score-ring-wrap"><svg viewBox="0 0 36 36">
+      <circle cx="18" cy="18" r="14" fill="rgba(7,9,15,.75)"/>
       <circle class="ring-bg" cx="18" cy="18" r="15.9"/>
       <circle class="ring-fill" cx="18" cy="18" r="15.9" stroke="${col}" stroke-dasharray="${dash.toFixed(1)} ${(circ-dash).toFixed(1)}" stroke-dashoffset="${(circ*.25).toFixed(1)}"/>
-      <text x="18" y="22" style="fill:${col};font-size:9px;font-weight:800;font-family:Inter,sans-serif;text-anchor:middle">${sc}</text>
+      <text x="18" y="18" transform="rotate(90 18 18)" text-anchor="middle" dominant-baseline="central" style="fill:#fff;font-size:10px;font-weight:900;font-family:Inter,sans-serif;filter:drop-shadow(0 0 3px ${col})">${sc}</text>
     </svg></div>
     <span class="img-tag ${rtCls}">${rentTag}</span>
   </div>
@@ -1012,37 +1294,37 @@ function renderCards(data){
     <div class="card-title">${escH(l.name||'Untitled')}</div>
     <div class="card-address">
       <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      ${l.address?escH(l.address):'<span style="color:var(--muted)">No address</span>'}
+      ${l.address?escH(l.address):`<span style="color:var(--muted)">${t('noAddress')}</span>`}
       ${stObj?`<span class="state-badge">${stObj.code}</span>`:''}
       ${l.mietpreisbremse?'<span class="state-badge mpb-badge">MPB</span>':''}
     </div>
     <div class="yield-row">
       <div class="yield-box gross">
-        <div class="yield-label">Bruttomietrendite</div>
+        <div class="yield-label">${t('grossYield')}</div>
         <div class="yield-val ${yClass(m.grossYield)}">${gF||'<span style="font-size:12px;font-weight:400;color:var(--muted)">N/A</span>'}</div>
-        <div class="yield-basis">Kaufpreis &middot; Kaltmiete only</div>
+        <div class="yield-basis">${t('kaltmieteOnly')}</div>
       </div>
       <div class="yield-box net">
-        <div class="yield-label">Nettomietrendite</div>
+        <div class="yield-label">${t('netYield')}</div>
         <div class="yield-val ${yClass(m.netYield)}">${nF||'<span style="font-size:12px;font-weight:400;color:var(--muted)">N/A</span>'}</div>
-        <div class="yield-basis">after non-recov. Hausgeld</div>
+        <div class="yield-basis">${t('afterNonRecov')}</div>
       </div>
     </div>
     <div class="metrics">
-      <div class="metric"><div class="m-label">Kaufpreis</div><div class="m-val">${eur(l.price)||'<span class="na">—</span>'}</div></div>
-      <div class="metric"><div class="m-label">Wohnfl&auml;che</div><div class="m-val">${l.area?l.area+' sqm':'<span class="na">—</span>'}</div></div>
-      <div class="metric"><div class="m-label">&euro;/sqm</div><div class="m-val ${m.psqm?(m.psqm<3500?'good':m.psqm<6500?'warn':'bad'):''}">${eur(m.psqm)||'<span class="na">—</span>'}</div></div>
-      <div class="metric"><div class="m-label">Total Kosten</div><div class="m-val" style="font-size:11px">${eur(m.totalAcqCost)||'—'}</div><div class="m-sub">${m.totalNbk?'+'+m.totalNbk.toFixed(1)+'% Nbk':''}</div></div>
-      <div class="metric"><div class="m-label">Energieklasse</div><div class="m-val">${eBadge(l.energy)}</div></div>
-      <div class="metric"><div class="m-label">Hausgeld</div><div class="m-val ${m.nonRecovHaus>350?'warn':''}" style="font-size:11px">${l.hausgeld?'&#8364;'+l.hausgeld+'/mo':'<span class="na">—</span>'}</div><div class="m-sub">${l.hausgeld&&l.umlagefaehig?'&#8364;'+Math.round(m.nonRecovHaus)+' n.r.':''}</div></div>
+      <div class="metric"><div class="m-label">${t('kaufpreis')}</div><div class="m-val">${eur(l.price)||'<span class="na">—</span>'}</div></div>
+      <div class="metric"><div class="m-label">${t('wohnflaeche')}</div><div class="m-val">${l.area?l.area+' sqm':'<span class="na">—</span>'}</div></div>
+      <div class="metric"><div class="m-label">${t('psqm')}</div><div class="m-val ${m.psqm?(m.psqm<3500?'good':m.psqm<6500?'warn':'bad'):''}">${eur(m.psqm)||'<span class="na">—</span>'}</div></div>
+      <div class="metric"><div class="m-label">${t('totalCost')}</div><div class="m-val" style="font-size:11px">${eur(m.totalAcqCost)||'—'}</div><div class="m-sub">${m.totalNbk?'+'+m.totalNbk.toFixed(1)+'% Nbk':''}</div></div>
+      <div class="metric"><div class="m-label">${t('energieklasse')}</div><div class="m-val">${eBadge(l.energy)}</div></div>
+      <div class="metric"><div class="m-label">${t('hausgeld')}</div><div class="m-val ${m.nonRecovHaus>350?'warn':''}" style="font-size:11px">${l.hausgeld?'&#8364;'+l.hausgeld+'/mo':'<span class="na">—</span>'}</div><div class="m-sub">${l.hausgeld&&l.umlagefaehig?'&#8364;'+Math.round(m.nonRecovHaus)+' n.r.':''}</div></div>
     </div>
   </div>
   ${flags?`<div class="flags">${flags}</div>`:''}
   <div class="card-footer">
     <span class="card-source">${escH(l.source||l.city||'')}</span>
     <div class="card-actions">
-      <button class="action-btn" onclick="openModal('${l.id}')">&#9998; Edit</button>
-      <button class="action-btn del" onclick="deleteListing('${l.id}')">&#128465; Delete</button>
+      <button class="action-btn" onclick="openModal('${l.id}')">${t('edit')}</button>
+      <button class="action-btn del" onclick="deleteListing('${l.id}')">${t('del')}</button>
     </div>
   </div>
 </div>`;
@@ -1123,7 +1405,7 @@ function calcYieldPreview(){
 
 function openModal(id){
   editId=id||null;
-  document.getElementById('modalTitle').textContent=id?'Edit Property':'Add Property';
+  document.getElementById('modalTitle').textContent=id?t('editPropertyTitle'):t('addPropertyTitle');
   if(id){
     const l=listings.find(x=>x.id===id);
     if(l){
@@ -1193,7 +1475,7 @@ if(!listings.length){
   ];
   persist();
 }
-render();
+applyLang();
 
 // ══════════════════════════════════════════
 //  SMART PASTE PARSER
@@ -1518,6 +1800,21 @@ function openPortal(portal){
   return false;
 }
 
+
+// ── Mobile sidebar ──
+function toggleSidebar(){
+  const s=document.getElementById('sidebar');
+  const b=document.getElementById('sidebarBackdrop');
+  const open=s.classList.toggle('open');
+  b.classList.toggle('open',open);
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+}
+// Close sidebar on resize to desktop
+window.addEventListener('resize',()=>{if(window.innerWidth>768)closeSidebar();});
+
 </script>
 
 <!-- ══════════ COMPARE BAR ══════════ -->
@@ -1525,10 +1822,10 @@ function openPortal(portal){
   <div class="compare-bar-inner">
     <div class="compare-bar-thumbs" id="compareBarThumbs"></div>
     <div class="compare-bar-label"><strong id="compareCount">0</strong> selected</div>
-    <button class="btn-compare-clear" onclick="clearCompare()">Clear</button>
+    <button class="btn-compare-clear" onclick="clearCompare()" data-i18n="compareClear">Clear</button>
     <button class="btn-compare-go" onclick="openCompareModal()">
       <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
-      Compare
+      <span data-i18n="compareBtn">Compare</span>
     </button>
   </div>
 </div>
@@ -1539,7 +1836,7 @@ function openPortal(portal){
     <div class="compare-modal-header">
       <div style="font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
-        Side-by-Side Comparison
+        <span data-i18n="compareTitle">Side-by-Side Comparison</span>
       </div>
       <button class="modal-close" onclick="closeCompareModal()">✕</button>
     </div>
@@ -1555,7 +1852,7 @@ function openPortal(portal){
     <div class="find-modal-header">
       <div style="font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        Find Listings on Portals
+        <span data-i18n="findTitle">Find Listings on Portals</span>
       </div>
       <button class="modal-close" onclick="closeFindModal()">✕</button>
     </div>
