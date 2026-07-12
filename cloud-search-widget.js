@@ -9,7 +9,7 @@
  * For local testing, keep it as http://localhost:8000
  */
 
-const RE_RADAR_API = "http://localhost:8000";   // ← change to your cloud URL after deploy
+const RE_RADAR_API = "https://re-rader.onrender.com";
 
 // ─────────────────────────────────────────────────────────────────
 //  Inject the widget HTML + CSS
