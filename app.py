@@ -39,8 +39,18 @@ try:
 except ImportError:
     pass
 
-# Import cloud entry-point from the agent module
-from radar_llm_agent_v2 import run_agent_cloud  # noqa: E402
+# Import agents — prefer browser v3 when Browserless is configured
+_USE_BROWSER = bool(os.environ.get("BROWSERLESS_TOKEN"))
+
+if _USE_BROWSER:
+    try:
+        from radar_browser_agent_v3 import run_agent as _run_browser_agent
+        print("✓  Browser agent (v3 + Browserless.io) loaded")
+    except ImportError:
+        _USE_BROWSER = False
+        print("⚠  playwright not installed — falling back to urllib agent")
+
+from radar_llm_agent_v2 import run_agent_cloud as _run_urllib_agent  # noqa: E402
 
 # ─────────────────────────────────────────────────────────────────
 #  App
@@ -110,13 +120,26 @@ def _run_job(job_id: str, req: SearchRequest) -> None:
             f"class B or better, Rücklage disclosed, provisionsfrei preferred."
         )
 
-        saved, inquiries = run_agent_cloud(
-            goal=goal,
-            city=city,
-            max_save=req.max_listings,
-            budget=budget,
-            progress_cb=log,
-        )
+        if _USE_BROWSER:
+            # Browser agent — Claude controls a real Chrome via Browserless.io
+            log("Using browser agent (Playwright + Browserless.io)")
+            saved, inquiries = _run_browser_agent(
+                goal=goal,
+                city=city,
+                max_save=req.max_listings,
+                budget=budget,
+                headless=True,   # always headless in cloud
+            )
+        else:
+            # Fallback — urllib-based agent
+            log("Using urllib agent (v2)")
+            saved, inquiries = _run_urllib_agent(
+                goal=goal,
+                city=city,
+                max_save=req.max_listings,
+                budget=budget,
+                progress_cb=log,
+            )
 
         # ── Persist listings ────────────────────────────────────
         existing = _read_json(LISTINGS_FILE)
@@ -150,9 +173,11 @@ def _run_job(job_id: str, req: SearchRequest) -> None:
 @app.get("/health")
 def health():
     return {
-        "status":   "ok",
-        "listings": len(_read_json(LISTINGS_FILE)),
-        "api_key":  bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "status":       "ok",
+        "listings":     len(_read_json(LISTINGS_FILE)),
+        "api_key":      bool(os.environ.get("ANTHROPIC_API_KEY")),
+        "agent_mode":   "browser (Browserless.io)" if _USE_BROWSER else "urllib (v2)",
+        "browserless":  bool(os.environ.get("BROWSERLESS_TOKEN")),
     }
 
 
