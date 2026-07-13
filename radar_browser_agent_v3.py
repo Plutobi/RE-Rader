@@ -41,24 +41,26 @@ except ImportError:
 try:
     import anthropic
 except ImportError:
-    print("\n  ✗  anthropic not installed.  Run:  pip install anthropic\n")
-    sys.exit(1)
+    raise ImportError(
+        "anthropic not installed.  Run:  pip install anthropic"
+    )
 
 try:
     from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 except ImportError:
-    print("\n  ✗  playwright not installed.")
-    print("     Run:  pip install playwright && playwright install chromium\n")
-    sys.exit(1)
+    raise ImportError(
+        "playwright not installed.  "
+        "Run:  pip install playwright && playwright install chromium"
+    )
 
 # ─────────────────────────────────────────────────────────────────
 #  CONFIG
 # ─────────────────────────────────────────────────────────────────
-MODEL          = "claude-sonnet-4-6"
+MODEL          = "claude-haiku-4-5-20251001"
 DASHBOARD_FILE = "index.html"
 INQUIRY_FILE   = "inquiry_emails.md"
-MAX_TOOL_CALLS = 60
-PAGE_TIMEOUT   = 30_000   # ms
+MAX_TOOL_CALLS = 40
+PAGE_TIMEOUT   = 15_000   # ms
 
 # ─────────────────────────────────────────────────────────────────
 #  GERMAN RE CONSTANTS
@@ -163,14 +165,21 @@ class BrowserSession:
             self._remote = False
 
         self.page = ctx.new_page()
+        # Block images, media and fonts — we only need text
+        self.page.route(
+            "**/*",
+            lambda route: route.abort()
+            if route.request.resource_type in ("image", "media", "font")
+            else route.continue_()
+        )
         ok("Browser ready")
 
     def dismiss_cookies(self):
         """Try every known cookie-banner pattern."""
         for sel in self.COOKIE_BUTTONS:
             try:
-                self.page.click(sel, timeout=2500)
-                time.sleep(0.4)
+                self.page.click(sel, timeout=2000)
+                time.sleep(0.2)
                 return True
             except Exception:
                 continue
@@ -180,9 +189,9 @@ class BrowserSession:
         """Navigate and return page text."""
         try:
             self.page.goto(url, wait_until="domcontentloaded", timeout=PAGE_TIMEOUT)
-            time.sleep(1.2)
+            time.sleep(0.4)
             self.dismiss_cookies()
-            time.sleep(0.5)
+            time.sleep(0.15)
         except PWTimeout:
             return f"TIMEOUT loading {url}"
         except Exception as e:
@@ -196,7 +205,7 @@ class BrowserSession:
                 const bad = ['script','style','noscript','nav','footer','header','aside'];
                 bad.forEach(t => document.querySelectorAll(t)
                     .forEach(el => el.remove()));
-                return (document.body?.innerText || '').substring(0, 12000);
+                return (document.body?.innerText || '').substring(0, 6000);
             }""")
         except Exception:
             return ""
@@ -220,7 +229,7 @@ class BrowserSession:
     def click_text(self, text: str) -> bool:
         try:
             self.page.click(f"text={text}", timeout=5000)
-            time.sleep(1.0)
+            time.sleep(0.4)
             self.dismiss_cookies()
             return True
         except Exception:
@@ -230,7 +239,7 @@ class BrowserSession:
         try:
             self.page.fill(selector, value, timeout=5000)
             self.page.press(selector, "Enter")
-            time.sleep(2.0)
+            time.sleep(0.8)
             return True
         except Exception:
             return False
@@ -561,7 +570,7 @@ TOOLS = [
         "name": "done",
         "description": (
             "End the session. Call after searching ≥2 portals, "
-            "opening ≥6 listing pages, saving the best properties, "
+            "opening ≥4 listing pages, saving the best properties, "
             "and flagging missing data."
         ),
         "input_schema": {
@@ -704,7 +713,7 @@ Call done() when finished with full summary and top recommendation."""
                         "type": "tool_result", "tool_use_id": block.id,
                         "content": (
                             f"URL: {session.current_url()}\n\n"
-                            f"PAGE TEXT (first 3000 chars):\n{text[:3000]}"
+                            f"PAGE TEXT (first 2000 chars):\n{text[:2000]}"
                         ),
                     })
 
@@ -739,7 +748,7 @@ Call done() when finished with full summary and top recommendation."""
                         "type": "tool_result", "tool_use_id": block.id,
                         "content": (
                             f"URL: {session.current_url()}\n\n"
-                            f"LISTING PAGE TEXT:\n{text[:9000]}"
+                            f"LISTING PAGE TEXT:\n{text[:5000]}"
                         ),
                     })
 
@@ -750,7 +759,7 @@ Call done() when finished with full summary and top recommendation."""
                     success = session.click_text(text_to_click)
                     result  = "Clicked successfully." if success else "Element not found or not clickable."
                     if success:
-                        result += f"\n\nPAGE AFTER CLICK:\n{session._text()[:4000]}"
+                        result += f"\n\nPAGE AFTER CLICK:\n{session._text()[:2000]}"
                     tool_results.append({
                         "type": "tool_result", "tool_use_id": block.id,
                         "content": result,
@@ -762,7 +771,7 @@ Call done() when finished with full summary and top recommendation."""
                     text = session._text()
                     tool_results.append({
                         "type": "tool_result", "tool_use_id": block.id,
-                        "content": f"URL: {session.current_url()}\n\n{text[:9000]}",
+                        "content": f"URL: {session.current_url()}\n\n{text[:5000]}",
                     })
 
                 # ── flag_missing_data ──────────────────────────

@@ -52,8 +52,9 @@ except ImportError:
 try:
     import anthropic
 except ImportError:
-    print("\n  ✗  anthropic not installed.  Run:  pip install anthropic\n")
-    sys.exit(1)
+    raise ImportError(
+        "anthropic not installed.  Run:  pip install anthropic"
+    )
 
 # ─────────────────────────────────────────────────────────────────
 #  CONFIG
