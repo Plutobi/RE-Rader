@@ -129,6 +129,7 @@ def _run_job(job_id: str, req: SearchRequest) -> None:
                 max_save=req.max_listings,
                 budget=budget,
                 headless=True,   # always headless in cloud
+                progress_cb=log,
             )
         else:
             # Fallback — urllib-based agent

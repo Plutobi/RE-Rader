@@ -140,7 +140,7 @@ class BrowserSession:
             # ── Cloud: connect to Browserless.io remote Chrome ──
             info("Connecting to cloud browser (Browserless.io)…")
             endpoint = f"wss://chrome.browserless.io?token={token}"
-            self._br = self._pw.chromium.connect_over_cdp(endpoint)
+            self._br = self._pw.chromium.connect_over_cdp(endpoint, timeout=20000)
             # Reuse existing context if available, else create one
             if self._br.contexts:
                 ctx = self._br.contexts[0]
@@ -590,11 +590,16 @@ TOOLS = [
 # ─────────────────────────────────────────────────────────────────
 #  AGENT LOOP
 # ─────────────────────────────────────────────────────────────────
-def run_agent(goal: str, city: str, max_save: int, budget: int, headless: bool):
+def run_agent(goal: str, city: str, max_save: int, budget: int, headless: bool,
+              progress_cb=None):
+    def _log(msg: str):
+        info(msg)
+        if progress_cb:
+            progress_cb(msg)
+
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
-        err("ANTHROPIC_API_KEY not set. Add it to a .env file.")
-        sys.exit(1)
+        raise RuntimeError("ANTHROPIC_API_KEY not set in environment.")
 
     client = anthropic.Anthropic(
         api_key=api_key,
@@ -657,8 +662,10 @@ Step 6 — DECIDE & SAVE (use save_listing)
 Call done() when finished with full summary and top recommendation."""
 
     # Start browser
+    _log(f"Connecting to browser (Browserless.io)…")
     session = BrowserSession(headless=headless)
     session.start()
+    _log("Browser ready — starting agent loop")
 
     messages        = [{"role": "user", "content": goal}]
     saved_listings  = []
@@ -704,6 +711,7 @@ Call done() when finished with full summary and top recommendation."""
                     portal = inp["portal"]
                     c      = inp.get("city", city)
                     url    = PORTAL_URLS.get(portal, lambda x: "")(c)
+                    _log(f"Searching {portal} for {c}…")
                     tool_log(f"navigate_to_portal({portal}, {c})")
                     tool_log(f"  → {url}")
                     text = session.go(url)
@@ -740,6 +748,7 @@ Call done() when finished with full summary and top recommendation."""
                 elif name == "open_listing":
                     url    = inp["url"]
                     reason = inp.get("reason", "")
+                    _log(f"Opening listing… {url[-60:]}")
                     tool_log(f"open_listing  {url[-70:]}")
                     if reason:
                         info(f"  {reason}")
@@ -800,6 +809,7 @@ Call done() when finished with full summary and top recommendation."""
                     )
                     if gy:
                         line += f"  GY {gy:.1f}%"
+                    _log(line)
                     ok(line)
                     tool_results.append({
                         "type": "tool_result", "tool_use_id": block.id,
@@ -809,6 +819,7 @@ Call done() when finished with full summary and top recommendation."""
                 # ── done ───────────────────────────────────────
                 elif name == "done":
                     summary  = inp.get("summary", "")
+                    _log(f"Agent done — {len(saved_listings)} listings saved.")
                     top      = inp.get("top_pick", "")
                     portals  = inp.get("portals_searched", [])
                     reviewed = inp.get("total_reviewed", "?")
