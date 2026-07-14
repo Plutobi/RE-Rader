@@ -619,47 +619,45 @@ click buttons, and interact with pages exactly as a human investor would.
 YOUR GOAL: {goal}
 {bclause}
 
-══════════ BROWSER-FIRST WORKFLOW ══════════
+══════════ MANDATORY 3-STEP WORKFLOW ══════════
 
-Step 1 — SEARCH PORTALS (use navigate_to_portal)
-  Open at least 2 portals. Start with immowelt, then immobilienscout24.
-  After each portal loads, call extract_listing_urls to get the listings.
-  Cookie banners are dismissed automatically — no need to handle them.
+⚠️  CRITICAL RULE: You MUST follow these steps in order for EVERY portal.
+    Skipping extract_listing_urls will result in opening wrong pages.
 
-Step 2 — OPEN LISTINGS (use open_listing)
-  Open each listing URL individually. Read the full page text.
-  Look for: Kaufpreis, Wohnfläche, Zimmer, Baujahr, Energieeffizienzklasse,
-  Hausgeld, Kaltmiete, Warmmiete, Rücklage, Mieterstatus, Kontaktdaten.
-  Use click_on_page if you need to expand sections ("Mehr anzeigen", "Kontakt").
+STEP A → navigate_to_portal(portal, city)
+  Load the search results page for that portal.
+  Start with ohne-makler, then immowelt.
 
-Step 3 — FLAG MISSING DATA (use flag_missing_data)
-  For every listing with missing investment data, queue an inquiry email.
-  Even for listings you save — investors always request WEG documents.
+STEP B → extract_listing_urls(portal)  ← ALWAYS call this after step A
+  This reads the DOM and returns actual listing URLs (e.g. /expose/ links).
+  NEVER try to use URLs from the page text directly — they are filter/pagination links.
+  extract_listing_urls is the ONLY way to get correct listing URLs.
 
-Step 4 — ANALYSE (read with full comprehension)
-  "Provisionsfrei" = no agent fee. "Vermietet" = tenanted.
-  "Kaltmiete" is the yield basis. Yield = (Kalt × 12) / Kaufpreis × 100.
-  "WEG" = owners' association. "Rücklage" = maintenance reserve.
+STEP C → open_listing(url)  ← ONLY use URLs returned by extract_listing_urls
+  Open each listing URL. Read: Kaufpreis, Wohnfläche, Zimmer, Baujahr,
+  Energieeffizienzklasse, Hausgeld, Kaltmiete, Rücklage, Mieterstatus.
 
-Step 5 — IDENTIFY GAPS
-  Complete listing = price + area + rent + Hausgeld + Rücklage + energy + Baujahr + tenancy.
-  Missing 3+ = "data-poor" listing.
+Repeat A→B→C for at least 2 portals. Open at least 4 listing pages total.
 
-Step 6 — DECIDE & SAVE (use save_listing)
+══════════ SAVING RULES ══════════
+
   Bundesland: {state} | Grunderwerbsteuer: {grest}%
   Mietpreisbremse in {city.capitalize()}: {'YES' if mpb else 'NO'}
-  Total acq. cost = price × (1 + ({grest} + 1.5 + Makler%) / 100)
-  Gross yield target ≥ 4%. Energy F/G/H = EU renovation risk.
-  Rücklage < €15/m² building area = Sonderumlage risk.
+  Gross yield = (Kaltmiete × 12) / Kaufpreis × 100
 
-  Save up to {max_save} listings meeting ≥3 of:
-    ✓ Gross yield ≥ 3.5%     ✓ Energy class A–D
-    ✓ Rücklage present       ✓ Tenancy status known    ✓ Price clear
-  Write full investment reasoning in notes.
+  SAVE a listing with save_listing if it has AT LEAST:
+    ✓ Price (Kaufpreis)   AND
+    ✓ Area (Wohnfläche)   AND
+    ✓ Either Kaltmiete OR you flag it with flag_missing_data
+
+  Save up to {max_save} listings. Even data-poor listings should be saved
+  with notes explaining what is missing. Use flag_missing_data for missing fields.
+
+  Write investment reasoning in notes: yield, risks, verdict.
 
 ════════════════════════════════════════════
 
-Call done() when finished with full summary and top recommendation."""
+Call done() after searching ≥2 portals, opening ≥4 listings, saving results."""
 
     # Start browser
     _log(f"Connecting to browser (Browserless.io)…")
@@ -715,13 +713,18 @@ Call done() when finished with full summary and top recommendation."""
                     tool_log(f"navigate_to_portal({portal}, {c})")
                     tool_log(f"  → {url}")
                     text = session.go(url)
-                    snippet = text[:300].replace("\n", " ")
                     ok(f"  Page loaded — {len(text)} chars  |  url: {session.current_url()[-60:]}")
+                    # Return a short confirmation + mandatory next step.
+                    # Do NOT return page text — it contains filter/pagination links
+                    # that the agent would mistakenly use as listing URLs.
                     tool_results.append({
                         "type": "tool_result", "tool_use_id": block.id,
                         "content": (
-                            f"URL: {session.current_url()}\n\n"
-                            f"PAGE TEXT (first 2000 chars):\n{text[:2000]}"
+                            f"Portal '{portal}' loaded for city '{c}'.\n"
+                            f"Page has ~{len(text)} chars of content.\n\n"
+                            f"MANDATORY NEXT STEP: Call extract_listing_urls(portal='{portal}') "
+                            f"to get the actual listing URLs from the page DOM.\n"
+                            f"Do NOT call open_listing yet — first get the URLs."
                         ),
                     })
 
@@ -735,12 +738,21 @@ Call done() when finished with full summary and top recommendation."""
                         ok(f"  Found {len(urls)} listing URLs")
                     else:
                         warn("  No listing URLs found — portal may have blocked or changed layout")
+                    if not urls:
+                        hint = (
+                            "No listing URLs found. The portal may have blocked the request "
+                            "or changed its layout. Try navigate_to_portal with a different portal "
+                            "(e.g. 'ohne-makler' or 'immowelt')."
+                        )
+                    else:
+                        hint = f"Use these URLs with open_listing — do NOT modify them."
                     tool_results.append({
                         "type": "tool_result", "tool_use_id": block.id,
                         "content": json.dumps({
                             "portal": portal,
                             "count":  len(urls),
                             "urls":   urls[:20],
+                            "hint":   hint,
                         }),
                     })
 
@@ -757,7 +769,8 @@ Call done() when finished with full summary and top recommendation."""
                         "type": "tool_result", "tool_use_id": block.id,
                         "content": (
                             f"URL: {session.current_url()}\n\n"
-                            f"LISTING PAGE TEXT:\n{text[:5000]}"
+                            f"LISTING PAGE TEXT (extract price, area, rent, energy, hausgeld):\n"
+                            f"{text[:8000]}"
                         ),
                     })
 
