@@ -56,7 +56,7 @@ except ImportError:
 # ─────────────────────────────────────────────────────────────────
 #  CONFIG
 # ─────────────────────────────────────────────────────────────────
-MODEL          = "claude-haiku-4-5-20251001"
+MODEL          = "claude-3-haiku-20240307"
 DASHBOARD_FILE = "index.html"
 INQUIRY_FILE   = "inquiry_emails.md"
 MAX_TOOL_CALLS = 40
