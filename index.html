@@ -2283,6 +2283,16 @@ function toggleFilterPanel(){
 function toggleSidebar(){}
 function closeSidebar(){}
 
+// ── Extension sync bridge ─────────────────────────────────────────────────────
+// dashboard_sync.js (content script) writes to localStorage then fires this
+// message so the page re-renders without a full reload.
+window._reradarReload = render;
+window.addEventListener('message', (e) => {
+  if (e.source === window && e.data && e.data.type === 'RE_RADAR_EXT_SYNC') {
+    render();
+  }
+});
+
 </script>
 
 <!-- ══════════ COMPARE BAR ══════════ -->
