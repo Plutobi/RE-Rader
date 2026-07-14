@@ -12,6 +12,25 @@
 const RE_RADAR_API = "https://re-rader.onrender.com";
 
 // ─────────────────────────────────────────────────────────────────
+//  Page starts blank — listings only load after a Search Online.
+//  (Auto-load disabled; was causing pre-populated listings on start)
+// ─────────────────────────────────────────────────────────────────
+// window.addEventListener('load', ...) — DISABLED
+
+// Exposed so the search widget can update listings after a job completes
+window.reloadAgentListings = function (data) {
+  if (typeof window.listings === 'undefined') return;
+  // Keep user-added (localStorage) listings, replace cloud ones
+  const localIds = new Set(
+    JSON.parse(localStorage.getItem('re_radar_v3') || '[]').map(l => l.id)
+  );
+  const local = window.listings.filter(l => localIds.has(l.id));
+  window.listings = [...local, ...data];
+  if (typeof render === 'function') render();
+  if (typeof updateLayout === 'function') updateLayout();
+};
+
+// ─────────────────────────────────────────────────────────────────
 //  Inject the widget HTML + CSS
 // ─────────────────────────────────────────────────────────────────
 (function () {
@@ -97,17 +116,60 @@ const RE_RADAR_API = "https://re-rader.onrender.com";
       border-color: #6366f1;
     }
 
+    /* ── Progress bar ── */
+    #rc-progress-wrap {
+      display: none;
+      margin: 14px 0 4px;
+    }
+    #rc-progress-track {
+      background: #0f172a;
+      border-radius: 6px;
+      height: 8px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+    }
+    #rc-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #a5b4fc);
+      border-radius: 6px;
+      transition: width 0.7s cubic-bezier(.4,0,.2,1);
+    }
+    #rc-stage {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 6px;
+      min-height: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #rc-stage::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #6366f1;
+      flex-shrink: 0;
+      animation: rc-pulse 1.2s ease-in-out infinite;
+    }
+    #rc-stage.done::before { background: #4ade80; animation: none; }
+    #rc-stage.err::before  { background: #f87171; animation: none; }
+    @keyframes rc-pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .4; transform: scale(.6); }
+    }
+
     #rc-log {
       background: #0f172a;
       border: 1px solid #1e293b;
       border-radius: 8px;
       padding: 12px;
-      height: 170px;
+      height: 130px;
       overflow-y: auto;
       font-family: monospace;
       font-size: 12px;
       color: #94a3b8;
-      margin: 14px 0;
+      margin: 10px 0;
       display: none;
     }
     #rc-log .ok   { color: #4ade80; }
@@ -197,6 +259,11 @@ const RE_RADAR_API = "https://re-rader.onrender.com";
         <input id="rc-goal" type="text" placeholder="e.g. Find 3 provisionsfrei flats under €300k with confirmed Kaltmiete">
       </div>
 
+      <div id="rc-progress-wrap">
+        <div id="rc-progress-track"><div id="rc-progress-bar"></div></div>
+        <div id="rc-stage"></div>
+      </div>
+
       <div id="rc-log"></div>
       <div id="rc-status"></div>
 
@@ -211,33 +278,76 @@ const RE_RADAR_API = "https://re-rader.onrender.com";
   // ─────────────────────────────────────────────────────────────
   //  Logic
   // ─────────────────────────────────────────────────────────────
-  const logEl    = document.getElementById("rc-log");
-  const statusEl = document.getElementById("rc-status");
-  const searchBtn= document.getElementById("rc-search-btn");
-  let   pollTimer = null;
+  const logEl      = document.getElementById("rc-log");
+  const statusEl   = document.getElementById("rc-status");
+  const searchBtn  = document.getElementById("rc-search-btn");
+  const progressWrap = document.getElementById("rc-progress-wrap");
+  const progressBar  = document.getElementById("rc-progress-bar");
+  const stageEl      = document.getElementById("rc-stage");
+  let   pollTimer    = null;
+  let   _pct         = 0;
+
+  // ── Progress helpers ─────────────────────────────────────────
+  const STAGES = [
+    { match: /agent starting|connecting/i,            pct: 5,  label: "Connecting…"             },
+    { match: /searching|navigate_to_portal|search_portal/i, pct: 15, label: "Searching portals…" },
+    { match: /immobilienscout|immowelt|immonet|ohne-makler/i, pct: 25, label: "Reading search results…" },
+    { match: /reading listing|open_listing|fetch_listing/i, pct: 40, label: "Opening listings…"  },
+    { match: /missing data|flag_missing/i,            pct: 65, label: "Flagging missing data…"  },
+    { match: /SAVED|save_listing/i,                   pct: 80, label: "Saving listings…"         },
+    { match: /DONE|completed|run complete/i,          pct: 100, label: "Complete!"               },
+  ];
+
+  function advanceProgress(logLine) {
+    for (const s of STAGES) {
+      if (s.match.test(logLine) && s.pct > _pct) {
+        _pct = s.pct;
+        progressBar.style.width = _pct + "%";
+        stageEl.textContent     = s.label;
+        stageEl.className       = _pct === 100 ? "done" : "";
+        break;
+      }
+    }
+  }
+
+  function resetProgress() {
+    _pct = 0;
+    progressBar.style.width = "0%";
+    stageEl.textContent     = "";
+    stageEl.className       = "";
+    progressWrap.style.display = "none";
+  }
+
+  function showProgress() {
+    progressWrap.style.display = "block";
+  }
 
   function openModal()  { modal.classList.add("open"); }
   function closeModal() {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     modal.classList.remove("open");
-    logEl.style.display = "none";
-    logEl.innerHTML     = "";
+    logEl.style.display  = "none";
+    logEl.innerHTML      = "";
     statusEl.textContent = "";
-    searchBtn.disabled  = false;
+    searchBtn.disabled   = false;
     searchBtn.textContent = "Start Search";
+    resetProgress();
   }
 
   fab.addEventListener("click", openModal);
   document.getElementById("rc-close-btn").addEventListener("click", closeModal);
   modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
 
+  // Expose so hero/topbar buttons can open the modal without the FAB
+  window._openCloudModal = openModal;
+
   function addLog(msg, cls = "info") {
     const line = document.createElement("div");
     line.className = cls;
-    // Strip ANSI escape codes if any
     line.textContent = msg.replace(/\x1b\[[0-9;]*m/g, "");
     logEl.appendChild(line);
     logEl.scrollTop = logEl.scrollHeight;
+    advanceProgress(msg);   // ← update progress bar from every log line
   }
 
   function setStatus(msg) { statusEl.textContent = msg; }
@@ -248,11 +358,13 @@ const RE_RADAR_API = "https://re-rader.onrender.com";
     const budget = parseInt(document.getElementById("rc-budget").value) || 0;
     const goal   = document.getElementById("rc-goal").value.trim();
 
-    logEl.innerHTML     = "";
-    logEl.style.display = "block";
-    searchBtn.disabled  = true;
+    logEl.innerHTML      = "";
+    logEl.style.display  = "block";
+    searchBtn.disabled   = true;
     searchBtn.textContent = "Running…";
-    setStatus("Contacting backend…");
+    setStatus("");
+    showProgress();
+    advanceProgress("agent starting");   // kick bar to 5%
 
     let jobId;
     try {
@@ -297,14 +409,21 @@ const RE_RADAR_API = "https://re-rader.onrender.com";
 
         if (job.status === "completed") {
           clearInterval(pollTimer); pollTimer = null;
-          setStatus(`Done — ${job.listings.length} listing(s) saved. Reloading…`);
+          // Snap bar to 100%
+          _pct = 100;
+          progressBar.style.width = "100%";
+          stageEl.textContent = `Found ${job.listings.length} listing(s) — updating dashboard…`;
+          stageEl.className   = "done";
           searchBtn.textContent = "Done ✓";
-          // Reload listings into the page after a brief pause
-          setTimeout(() => reloadListings(), 1200);
+          setStatus("");
+          // Brief pause so user sees 100%, then reload listings
+          setTimeout(() => reloadListings(), 1400);
         } else if (job.status === "failed") {
           clearInterval(pollTimer); pollTimer = null;
           addLog(`Job failed: ${job.error}`, "err");
-          setStatus("Search failed — see log above.");
+          stageEl.textContent = "Search failed — see log above.";
+          stageEl.className   = "err";
+          setStatus("");
           searchBtn.disabled   = false;
           searchBtn.textContent = "Retry";
         }

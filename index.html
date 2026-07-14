@@ -365,6 +365,72 @@ tbody td{padding:11px 14px;vertical-align:middle}
   .view-btns button svg + *{display:none}
 }
 
+/* ══════════ HAMBURGER BUTTON ══════════ */
+.ham-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--muted);width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.ham-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ham-btn svg{width:16px;height:16px}
+
+/* ══════════ DRAWER ══════════ */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:400;opacity:0;pointer-events:none;transition:opacity .25s}
+.drawer-overlay.open{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:-320px;width:300px;height:100vh;background:var(--sidebar);border-left:1px solid var(--border);z-index:401;transition:right .28s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
+.drawer.open{right:0}
+.drawer-header{padding:18px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.drawer-title{font-size:14px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+.drawer-title svg{width:14px;height:14px;color:var(--accent)}
+.drawer-close{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted);width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s}
+.drawer-close:hover{border-color:var(--red);color:var(--red)}
+.drawer-body{padding:18px 20px;flex:1}
+.drawer-sec-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.9px;margin-bottom:8px}
+.drawer-btn{width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:6px;text-align:left}
+.drawer-btn:hover{border-color:var(--accent);color:var(--text);background:var(--accent-glow)}
+.drawer-btn svg{width:15px;height:15px;color:var(--muted);flex-shrink:0;transition:color .15s}
+.drawer-btn:hover svg{color:var(--accent)}
+.drawer-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
+.drawer-btn.active svg{color:var(--accent)}
+.drawer-hr{height:1px;background:var(--border);margin:16px 0}
+.drawer-view-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
+.drawer-lang-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+
+/* ══════════ HERO ══════════ */
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px 60px;text-align:center}
+.hero.hidden{display:none!important}
+.hero-glow{width:80px;height:80px;background:linear-gradient(135deg,var(--accent-d),var(--accent));border-radius:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 28px;box-shadow:0 0 60px rgba(79,70,229,.4),0 0 120px rgba(79,70,229,.1);animation:heroPulse 3s ease-in-out infinite}
+@keyframes heroPulse{0%,100%{box-shadow:0 0 40px rgba(79,70,229,.35),0 0 80px rgba(79,70,229,.08)}50%{box-shadow:0 0 70px rgba(79,70,229,.5),0 0 140px rgba(79,70,229,.14)}}
+.hero-glow svg{width:36px;height:36px;stroke:#fff;stroke-width:1.8}
+.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-1.2px;line-height:1.12;margin-bottom:14px;max-width:520px}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--green) 0%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:15px;color:var(--text2);max-width:440px;line-height:1.65;margin-bottom:38px;font-weight:400}
+.hero-cta{background:linear-gradient(135deg,#065f46,#059669);color:#fff;border:none;border-radius:14px;padding:16px 40px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:10px;letter-spacing:-.2px;box-shadow:0 0 32px rgba(52,211,153,.28),0 4px 20px rgba(0,0,0,.45);transition:transform .18s,box-shadow .18s}
+.hero-cta:hover{transform:translateY(-3px);box-shadow:0 0 48px rgba(52,211,153,.4),0 8px 32px rgba(0,0,0,.55)}
+.hero-cta svg{width:20px;height:20px}
+.hero-divider{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:12px;margin:22px 0 18px;width:100%;max-width:320px}
+.hero-divider::before,.hero-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.hero-portal-btn{background:transparent;border:1px solid var(--border2);border-radius:10px;color:var(--text2);padding:10px 24px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.hero-portal-btn:hover{border-color:var(--accent);color:var(--accent)}
+.hero-feats{display:flex;gap:20px;margin-top:52px;flex-wrap:wrap;justify-content:center}
+.hero-feat{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;font-weight:500}
+.hero-feat svg{width:14px;height:14px;color:var(--green);flex-shrink:0}
+
+/* ══════════ TOPBAR SEARCH ONLINE BTN ══════════ */
+.btn-search-online{background:linear-gradient(135deg,#065f46,#059669);color:#fff;border:none;border-radius:var(--r-sm);padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;box-shadow:0 0 14px rgba(52,211,153,.2);transition:opacity .15s;flex-shrink:0;white-space:nowrap}
+.btn-search-online:hover{opacity:.88}
+.btn-search-online svg{width:14px;height:14px}
+
+/* ══════════ HIDE FLOATING FAB (now integrated into topbar/hero) ══════════ */
+#re-cloud-btn{display:none!important}
+
+/* ══════════ STATS STRIP: hide when hero is shown ══════════ */
+#statsStrip{transition:opacity .2s}
+
+@media(max-width:480px){
+  .hero h1{font-size:24px}
+  .hero-sub{font-size:13px}
+  .hero-cta{padding:14px 28px;font-size:15px}
+  .drawer{width:280px}
+  .hero-feats{gap:14px}
+}
+
 </style>
 </head>
 <body>
@@ -380,40 +446,21 @@ tbody td{padding:11px 14px;vertical-align:middle}
       <div class="logo-icon"><svg fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
       <div class="logo-text">RE <span>Radar</span></div>
     </div>
-    <div class="search-wrap">
+    <!-- search input: only visible when there are listings -->
+    <div class="search-wrap" id="topSearchWrap" style="display:none">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="searchInput" placeholder="Search listings…" oninput="render()"/>
     </div>
-    <button class="icon-btn" id="filterToggleBtn" onclick="toggleFilterPanel()" title="Filters">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
-    </button>
-    <button class="icon-btn" onclick="openModal()" title="Add property">
-      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    </button>
-    <button class="icon-btn" onclick="openPasteModal()" title="Smart Paste">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-    </button>
-    <button class="icon-btn" onclick="openFindModal()" title="Find on portals">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    </button>
-    <button class="btn-agent" onclick="openAgentModal()">
+    <div style="flex:1"></div>
+    <!-- Search Online button: only visible when there are listings -->
+    <button class="btn-search-online" id="topSearchOnlineBtn" onclick="openCloudSearch()" style="display:none">
       <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07M8.46 8.46a5 5 0 000 7.07"/></svg>
-      Agent Search
+      Search Online
     </button>
-    <div class="view-btns">
-      <button id="btnCards" class="active" onclick="setView('cards')">
-        <svg fill="currentColor" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-        Cards
-      </button>
-      <button id="btnTable" onclick="setView('table')">
-        <svg fill="currentColor" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
-        Table
-      </button>
-    </div>
-    <div class="lang-toggle">
-      <button id="langBtn_en" onclick="setLang('en')" style="background:var(--accent-d);color:#fff">EN</button>
-      <button id="langBtn_de" onclick="setLang('de')" style="background:transparent;color:var(--muted)">DE</button>
-    </div>
+    <!-- Hamburger: always visible -->
+    <button class="ham-btn" onclick="openDrawer()" title="Menu" aria-label="Open menu">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
 
   <!-- filter panel (hidden by default) -->
@@ -462,11 +509,31 @@ tbody td{padding:11px 14px;vertical-align:middle}
         <option value="">All cities</option>
       </select>
     </div>
-    <button class="fp-sample" onclick="loadSampleData()">Load sample data</button>
+  </div>
+
+  <!-- ══════════ HERO (shown when no listings) ══════════ -->
+  <div class="hero" id="heroSection">
+    <div class="hero-glow">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <h1>Find German Real Estate<br><em>Investments</em></h1>
+    <p class="hero-sub">Our AI agent searches Immoscout24, Immowelt and Ohne-Makler — extracting yield, energy class, risk flags and inquiry emails automatically.</p>
+    <button class="hero-cta" onclick="openCloudSearch()">
+      <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07M8.46 8.46a5 5 0 000 7.07"/></svg>
+      Search Online
+    </button>
+    <div class="hero-divider">or</div>
+    <button class="hero-portal-btn" onclick="openFindModal()">Browse portals manually →</button>
+    <div class="hero-feats">
+      <div class="hero-feat"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>AI-powered extraction</div>
+      <div class="hero-feat"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Yield &amp; score analysis</div>
+      <div class="hero-feat"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Risk flag detection</div>
+      <div class="hero-feat"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Inquiry emails</div>
+    </div>
   </div>
 
   <!-- stats strip -->
-  <div class="stats-strip">
+  <div class="stats-strip" id="statsStrip" style="display:none">
     <div class="stat-box"><div class="sb-label" data-i18n="totalListings">Total Listings</div><div class="sb-val" id="stCount">0</div></div>
     <div class="stat-box"><div class="sb-label" data-i18n="bestScore">Best Score</div><div class="sb-val" id="stTop">—</div></div>
     <div class="stat-box"><div class="sb-label" data-i18n="avgGrossYield">Avg Gross Yield</div><div class="sb-val" id="stYield">—</div></div>
@@ -475,7 +542,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
   </div>
 
   <!-- content -->
-  <div class="content">
+  <div class="content" id="mainContent" style="display:none">
     <!-- cards view -->
     <div id="cardsView">
       <div class="cards-grid" id="cardsGrid"></div>
@@ -911,7 +978,8 @@ let editId = null;
 let compareSet = new Set();
 
 // AGENT_LISTINGS_START
-const AGENT_LISTINGS = [
+const AGENT_LISTINGS = []
+/* DISABLED — all data now comes from the cloud API on demand
   {
     "id": "agent-1783253396-3985",
     "name": "Provisionsfrei! 1-Zimmer mit Balkon / Rathaus Spandau",
@@ -1067,7 +1135,7 @@ const AGENT_LISTINGS = [
     "_agentUrl": "https://www.ohne-makler.net/immobilie/440472/",
     "_agentPortal": "ohne-makler.net"
   }
-]
+*/
 // AGENT_LISTINGS_END
 
 // Merge agent-injected listings (deduplicate by id)
@@ -1291,11 +1359,10 @@ function applyLang(){
   // Sort select options
   const ss=document.getElementById('sortSelect');
   if(ss){const map={score:'sortScore',yield:'sortYield',netyield:'sortNetYield',price:'sortPrice',psqm:'sortPsqm',name:'sortName'};[...ss.options].forEach(o=>{if(map[o.value])o.textContent=t(map[o.value]);});}
-  // Language toggle button states
+  // Language toggle button states (drawer uses .active class)
   ['en','de'].forEach(l=>{
     const btn=document.getElementById('langBtn_'+l);
-    if(btn)btn.style.background=l===currentLang?'var(--accent-d)':'transparent';
-    if(btn)btn.style.color=l===currentLang?'#fff':'var(--muted)';
+    if(btn)btn.classList.toggle('active',l===currentLang);
   });
   localStorage.setItem('re_lang',currentLang);
   render();
@@ -1306,6 +1373,49 @@ function setLang(l){currentLang=l;applyLang();}
 let currentView = 'cards';
 
 function persist(){ localStorage.setItem('re_radar_v3', JSON.stringify(listings)); }
+
+// ══════════════════════════════════════════
+//  HAMBURGER DRAWER
+// ══════════════════════════════════════════
+function openDrawer(){
+  document.getElementById('menuDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('menuDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+//  OPEN CLOUD SEARCH MODAL
+// ══════════════════════════════════════════
+function openCloudSearch(){
+  // Triggers the cloud-search-widget modal (exposed via window.openCloudSearch)
+  // The widget also wires the FAB click — we call it programmatically here
+  if(typeof window._openCloudModal==='function'){window._openCloudModal();return;}
+  const fab=document.getElementById('re-cloud-btn');
+  if(fab){fab.click();}
+}
+
+// ══════════════════════════════════════════
+//  LAYOUT: hero vs. content
+// ══════════════════════════════════════════
+function updateLayout(){
+  const has=window.listings&&window.listings.length>0;
+  // Hero
+  const hero=document.getElementById('heroSection');
+  if(hero)hero.classList.toggle('hidden',has);
+  // Topbar search + Search Online
+  const tsw=document.getElementById('topSearchWrap');
+  const tsb=document.getElementById('topSearchOnlineBtn');
+  if(tsw)tsw.style.display=has?'':'none';
+  if(tsb)tsb.style.display=has?'':'none';
+  // Stats strip + content
+  const ss=document.getElementById('statsStrip');
+  const mc=document.getElementById('mainContent');
+  if(ss)ss.style.display=has?'':'none';
+  if(mc)mc.style.display=has?'':'none';
+}
 
 // ═══════════════════════════════════════════════
 //  METRICS & SCORING
@@ -1454,6 +1564,7 @@ function render(){
   });
   updateStats(data);
   if(currentView==='cards') renderCards(data); else renderTable(data);
+  updateLayout();
 }
 
 function renderCards(data){
@@ -1569,7 +1680,17 @@ function updateStats(data){
   document.getElementById('stPsqm').textContent=avgE(ps);
 }
 
-function setView(v){currentView=v;document.getElementById('cardsView').classList.toggle('hidden',v!=='cards');document.getElementById('tableView').classList.toggle('hidden',v!=='table');document.getElementById('btnCards').classList.toggle('active',v==='cards');document.getElementById('btnTable').classList.toggle('active',v==='table');render();}
+function setView(v){
+  currentView=v;
+  document.getElementById('cardsView').classList.toggle('hidden',v!=='cards');
+  document.getElementById('tableView').classList.toggle('hidden',v!=='table');
+  // sync drawer buttons
+  const dc=document.getElementById('drawerBtnCards');
+  const dt=document.getElementById('drawerBtnTable');
+  if(dc)dc.classList.toggle('active',v==='cards');
+  if(dt)dt.classList.toggle('active',v==='table');
+  render();
+}
 function sortBy(f){document.getElementById('sortSelect').value=f;render();}
 
 function onStateChange(){
@@ -1662,18 +1783,6 @@ function loadSampleData(){
 }
 
 document.getElementById('f_rentType').addEventListener('change',calcYieldPreview);
-if(!listings.length){
-  const ts=new Date().toISOString();
-  listings=[
-    {id:crypto.randomUUID(),name:'3-Zimmer Altbau Prenzlauer Berg',address:'Schönhauser Allee 45, 10437 Berlin',state:'BE',city:'Berlin',yearBuilt:'1908',source:'ImmoScout24',imageUrl:'https://images.pexels.com/photos/12445995/pexels-photo-12445995.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'480000',area:'82',grunderwerbsteuer:'6.0',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'1400',warmRent:'1680',rentType:'cold',tenanted:'yes',mietpreisbremse:true,hausgeld:'290',umlagefaehig:'65',ruecklage:'18500',energy:'C',spekfrist:'0',maintenanceBacklog:false,notes:'Tenanted since 2019.',createdAt:ts,updatedAt:ts},
-    {id:crypto.randomUUID(),name:'2-Zimmer ETW Leipzig-Gohlis',address:'Möckernsche Str. 18, 04155 Leipzig',state:'SN',city:'Leipzig',yearBuilt:'1935',source:'Immowelt',imageUrl:'https://images.pexels.com/photos/17365410/pexels-photo-17365410.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'165000',area:'58',grunderwerbsteuer:'3.5',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'730',warmRent:'',rentType:'cold',tenanted:'yes',mietpreisbremse:false,hausgeld:'195',umlagefaehig:'60',ruecklage:'4200',energy:'E',spekfrist:'0',maintenanceBacklog:true,notes:'Facade renovation overdue.',createdAt:ts,updatedAt:ts},
-    {id:crypto.randomUUID(),name:'Neubau München-Schwabing',address:'Leopoldstraße 120, 80802 München',state:'BY',city:'München',yearBuilt:'2023',source:'Engel & Völkers',imageUrl:'https://images.pexels.com/photos/11018246/pexels-photo-11018246.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'890000',area:'68',grunderwerbsteuer:'3.5',notarkosten:'2.0',maklergebuehr:'3.57',coldRent:'2200',warmRent:'2550',rentType:'cold',tenanted:'no',mietpreisbremse:true,hausgeld:'410',umlagefaehig:'70',ruecklage:'38000',energy:'A',spekfrist:'0',maintenanceBacklog:false,notes:'Brand new. Vacant.',createdAt:ts,updatedAt:ts},
-    {id:crypto.randomUUID(),name:'1-Zimmer Hamburg-Altona',address:'Bahrenfelder Str. 77, 22765 Hamburg',state:'HH',city:'Hamburg',yearBuilt:'1980',source:'Immonet',imageUrl:'https://images.pexels.com/photos/16631149/pexels-photo-16631149.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'220000',area:'38',grunderwerbsteuer:'4.5',notarkosten:'1.5',maklergebuehr:'0',coldRent:'',warmRent:'950',rentType:'warm',tenanted:'yes',mietpreisbremse:true,hausgeld:'215',umlagefaehig:'65',ruecklage:'9000',energy:'D',spekfrist:'0',maintenanceBacklog:false,notes:'Warmmiete only.',createdAt:ts,updatedAt:ts},
-    {id:crypto.randomUUID(),name:'4-Zimmer Gründerzeit Dresden',address:'Rothenburger Str. 25, 01099 Dresden',state:'SN',city:'Dresden',yearBuilt:'1902',source:'Sparkasse Immo',imageUrl:'https://images.pexels.com/photos/20296321/pexels-photo-20296321.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'210000',area:'95',grunderwerbsteuer:'3.5',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'1050',warmRent:'',rentType:'estimate',tenanted:'no',mietpreisbremse:false,hausgeld:'265',umlagefaehig:'60',ruecklage:'14000',energy:'B',spekfrist:'0',maintenanceBacklog:false,notes:'Vacant.',createdAt:ts,updatedAt:ts},
-    {id:crypto.randomUUID(),name:'Penthouse Frankfurt-Sachsenhausen',address:'Schweizer Str. 88, 60594 Frankfurt am Main',state:'HE',city:'Frankfurt am Main',yearBuilt:'2018',source:"Christie's RE",imageUrl:'https://images.pexels.com/photos/15743372/pexels-photo-15743372.jpeg?auto=compress&cs=tinysrgb&w=700&h=400&fit=crop',price:'750000',area:'105',grunderwerbsteuer:'6.0',notarkosten:'1.5',maklergebuehr:'3.57',coldRent:'',warmRent:'',rentType:'unknown',tenanted:'unknown',mietpreisbremse:true,hausgeld:'440',umlagefaehig:'65',ruecklage:'32000',energy:'',spekfrist:'3',maintenanceBacklog:false,notes:'No rent data. 3yr into Spekulationsfrist.',createdAt:ts,updatedAt:ts}
-  ];
-  persist();
-}
 applyLang();
 
 // ══════════════════════════════════════════
@@ -2167,11 +2276,8 @@ function openPortal(portal){
 // ── Filter panel toggle ──
 function toggleFilterPanel(){
   const p=document.getElementById('filterPanel');
-  const b=document.getElementById('filterToggleBtn');
-  if(!p||!b)return;
-  const hidden=p.classList.toggle('hidden');
-  b.style.color=hidden?'':'var(--accent)';
-  b.style.borderColor=hidden?'':'var(--accent)';
+  if(!p)return;
+  p.classList.toggle('hidden');
 }
 // Stub for legacy calls
 function toggleSidebar(){}
@@ -2298,6 +2404,71 @@ function closeSidebar(){}
       <p style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5">After opening a listing, select all text (Ctrl+A / Cmd+A), copy, then use <strong style="color:var(--accent)">Smart Paste</strong> to extract fields automatically.</p>
     </div>
   </div>
+</div>
+
+<!-- ══════════ HAMBURGER DRAWER ══════════ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="menuDrawer" role="dialog" aria-label="Menu">
+  <div class="drawer-header">
+    <div class="drawer-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Menu
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">✕</button>
+  </div>
+  <div class="drawer-body">
+
+    <!-- Actions -->
+    <div class="drawer-sec-label">Actions</div>
+    <button class="drawer-btn" onclick="openModal();closeDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Property
+    </button>
+    <button class="drawer-btn" onclick="openPasteModal();closeDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      Smart Paste
+    </button>
+    <button class="drawer-btn" onclick="openFindModal();closeDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Find on Portals
+    </button>
+    <button class="drawer-btn" onclick="toggleFilterPanel();closeDrawer()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+      Filters &amp; Sort
+    </button>
+
+    <div class="drawer-hr"></div>
+
+    <!-- View -->
+    <div class="drawer-sec-label">View</div>
+    <div class="drawer-view-pair">
+      <button class="drawer-btn active" id="drawerBtnCards" onclick="setView('cards');closeDrawer()" style="justify-content:center">
+        <svg fill="currentColor" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+        Cards
+      </button>
+      <button class="drawer-btn" id="drawerBtnTable" onclick="setView('table');closeDrawer()" style="justify-content:center">
+        <svg fill="currentColor" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
+        Table
+      </button>
+    </div>
+
+    <div class="drawer-hr"></div>
+
+    <!-- Language -->
+    <div class="drawer-sec-label">Language</div>
+    <div class="drawer-lang-pair">
+      <button class="drawer-btn active" id="langBtn_en" onclick="setLang('en');closeDrawer()" style="justify-content:center;font-weight:700">EN</button>
+      <button class="drawer-btn" id="langBtn_de" onclick="setLang('de');closeDrawer()" style="justify-content:center;font-weight:700">DE</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Hidden inputs needed by legacy view-toggle functions (keep ids) -->
+<div style="display:none">
+  <button id="btnCards"></button>
+  <button id="btnTable"></button>
+  <button id="filterToggleBtn"></button>
 </div>
 
 <script src="cloud-search-widget.js"></script>
