@@ -50,7 +50,7 @@ const PORTALS = [
   },
   {
     name: 'immonet',
-    url: (city) => `https://www.immonet.de/immobilienbewertung/wohnung-kaufen-in-${slugify(city)}.html`,
+    url: (city) => `https://www.immonet.de/wohnung-kaufen/${slugify(city)}.html`,
     patterns: ['/angebot/'],
   },
 ];
@@ -103,7 +103,7 @@ function waitForLoad(tabId, timeout = 18000) {
       if (id === tabId && info.status === 'complete') {
         chrome.tabs.onUpdated.removeListener(listener);
         clearTimeout(timer);
-        setTimeout(resolve, 2500); // extra time for JS rendering
+        setTimeout(resolve, 5000); // extra time for JS rendering (SPAs need more)
       }
     }
     chrome.tabs.onUpdated.addListener(listener);
@@ -131,14 +131,24 @@ async function execScript(tabId, func, args = []) {
 // ── Injected functions (must be self-contained — no outer scope refs) ─────────
 
 function __getUrls(patterns) {
-  const found = [];
+  const found = new Set();
+  // Standard anchor tags
   for (const a of document.querySelectorAll('a[href]')) {
     const h = a.href;
-    if (patterns.some((p) => h.includes(p)) && !found.includes(h)) {
-      found.push(h);
+    if (patterns.some((p) => h.includes(p))) found.add(h);
+  }
+  // SPA-style data attributes (some portals render links without <a> tags)
+  if (found.size === 0) {
+    for (const el of document.querySelectorAll('[data-href],[data-url],[data-link]')) {
+      for (const attr of ['data-href', 'data-url', 'data-link']) {
+        const h = el.getAttribute(attr);
+        if (h && patterns.some((p) => h.includes(p))) {
+          try { found.add(new URL(h, location.href).href); } catch (_) {}
+        }
+      }
     }
   }
-  return found;
+  return [...found];
 }
 
 function __extractData() {
@@ -396,15 +406,26 @@ async function runSearch({ city, budget, maxListings }) {
 
     let tab;
     try {
+      send('progress', { msg: `${portal.name}: opening ${searchUrl}`, pct });
       tab = await openTab(searchUrl);
       await waitForLoad(tab.id);
 
       const urls = await execScript(tab.id, __getUrls, [portal.patterns]);
-      if (urls?.length) {
+      if (urls === null) {
+        send('progress', { msg: `${portal.name}: script blocked — check extension permissions`, pct });
+      } else if (urls.length === 0) {
+        // One retry with extra wait — some SPAs render links late
+        await sleep(3000);
+        const retry = await execScript(tab.id, __getUrls, [portal.patterns]);
+        if (retry?.length) {
+          send('progress', { msg: `${portal.name}: found ${retry.length} links (retry)`, pct });
+          allUrls.push(...retry);
+        } else {
+          send('progress', { msg: `${portal.name}: 0 links found (pattern: ${portal.patterns.join(',')})`, pct });
+        }
+      } else {
         send('progress', { msg: `${portal.name}: found ${urls.length} links`, pct });
         allUrls.push(...urls);
-      } else {
-        send('progress', { msg: `${portal.name}: no listing links found`, pct });
       }
     } catch (e) {
       send('progress', { msg: `${portal.name}: error — ${e.message}`, pct });
