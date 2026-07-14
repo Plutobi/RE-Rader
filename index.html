@@ -453,7 +453,7 @@ tbody td{padding:11px 14px;vertical-align:middle}
     </div>
     <div style="flex:1"></div>
     <!-- Search Online button: only visible when there are listings -->
-    <button class="btn-search-online" id="topSearchOnlineBtn" onclick="openCloudSearch()" style="display:none">
+    <button class="btn-search-online" id="topSearchOnlineBtn" style="display:none">
       <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07M8.46 8.46a5 5 0 000 7.07"/></svg>
       Search Online
     </button>
@@ -518,10 +518,10 @@ tbody td{padding:11px 14px;vertical-align:middle}
     </div>
     <h1>Find German Real Estate<br><em>Investments</em></h1>
     <p class="hero-sub">Our AI agent searches Immoscout24, Immowelt and Ohne-Makler — extracting yield, energy class, risk flags and inquiry emails automatically.</p>
-    <button class="hero-cta" onclick="openCloudSearch()">
-      <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07M8.46 8.46a5 5 0 000 7.07"/></svg>
-      Search Online
-    </button>
+    <a class="hero-cta" href="https://drive.google.com/drive/folders/1AAeasVsdzdlYfkNIX9VxADnfJzNGfYLg" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">
+      <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Get the Chrome Extension
+    </a>
     <div class="hero-divider">or</div>
     <button class="hero-portal-btn" onclick="openFindModal()">Browse portals manually →</button>
     <div class="hero-feats">
@@ -1390,11 +1390,8 @@ function closeDrawer(){
 //  OPEN CLOUD SEARCH MODAL
 // ══════════════════════════════════════════
 function openCloudSearch(){
-  // Triggers the cloud-search-widget modal (exposed via window.openCloudSearch)
-  // The widget also wires the FAB click — we call it programmatically here
-  if(typeof window._openCloudModal==='function'){window._openCloudModal();return;}
-  const fab=document.getElementById('re-cloud-btn');
-  if(fab){fab.click();}
+  // Search is now handled by the RE Radar Chrome extension.
+  // This stub prevents errors from any remaining onclick references.
 }
 
 // ══════════════════════════════════════════
@@ -2481,6 +2478,5 @@ window.addEventListener('message', (e) => {
   <button id="filterToggleBtn"></button>
 </div>
 
-<script src="cloud-search-widget.js"></script>
 </body>
 </html>
