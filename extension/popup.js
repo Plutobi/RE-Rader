@@ -33,7 +33,8 @@ function connectPort() {
   port.onMessage.addListener(onBgMsg);
   port.onDisconnect.addListener(() => {
     port = null;
-    if (searching) setIdle();
+    // Don't reset to idle — search keeps running in the background service worker.
+    // When popup reopens, connectPort() fires getStored and shows completed results.
   });
   port.postMessage({ action: 'getStored' });
 }
@@ -45,9 +46,11 @@ function onBgMsg(msg) {
       setProgress(msg.msg, msg.pct ?? null);
       break;
     case 'listing':
-      listings.push(msg.listing);
-      renderCard(msg.listing);
-      updateCount();
+      if (!listings.some((l) => l.id === msg.listing.id)) {
+        listings.push(msg.listing);
+        renderCard(msg.listing);
+        updateCount();
+      }
       break;
     case 'done':
       setIdle();

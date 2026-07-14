@@ -194,7 +194,13 @@ function __extractData() {
 
   // Price must be a purchase price (> €20k); area in m²; rooms < 30
   const price    = findNum(['Kaufpreis', 'Verkaufspreis', 'Angebotspreis'], 20000, 10000000);
-  const area     = findNum(['Wohnfläche', 'Nutzfläche', 'Fläche ca', 'Fläche'], 5, 5000);
+  // Area: try labelled first (min 15 — rules out balconies/terraces), then scan all "XX m²" in page
+  const area = findNum(['Wohnfläche', 'Nutzfläche', 'Wohnfl'], 15, 2000)
+    || (() => {
+      const hits = [...txt.matchAll(/(\d{1,3}(?:[.,]\d+)?)\s*m[²2]/g)]
+        .map((m) => num(m[1])).filter((v) => v != null && v >= 15 && v <= 2000);
+      return hits.length ? Math.max(...hits) : null;
+    })();
   if (!price && !area) return null;
 
   const coldRent  = findNum(['Kaltmiete', 'Nettokaltmiete', 'Miete netto'], 50, 20000);
@@ -212,21 +218,32 @@ function __extractData() {
   const maklergebuehr = /provisionsfrei|ohne Makler|ohne Provision/i.test(txt) ? 0
     : (() => { const m = txt.match(/Provision[:\s]*([0-9,.]+)\s*%/i); return m ? parseFloat(m[1].replace(',','.')) : null; })();
 
-  const name = (document.querySelector('h1')?.textContent?.trim()
-    || document.title?.replace(/\s*[-|].*$/, '').trim()
-    || 'Inserat').slice(0, 120);
+  // Name: first non-empty line of h1 (avoids grabbing nested price/area nodes)
+  const h1Raw = document.querySelector('h1')?.innerText?.trim() || '';
+  const name = (
+    h1Raw.split(/\n/).map((l) => l.trim()).find((l) => l.length > 3)
+    || document.title?.replace(/\s*[|–\-].*$/, '').trim()
+    || 'Inserat'
+  ).slice(0, 120);
 
+  // Address: try DOM selectors, then German postal code pattern (e.g. "53842 Troisdorf")
+  const addrEl = document.querySelector(
+    '[class*="address" i], [class*="location" i], [class*="ort" i], [data-testid*="address"], [data-testid*="location"]'
+  );
+  const postalMatch = txt.match(/(\d{5})\s+([A-ZÄÖÜ][^\n,]{2,30})/);
   const address = (
-    document.querySelector('[class*="address" i]')?.textContent?.trim()
-    || document.querySelector('[class*="location" i], [class*="ort" i]')?.textContent?.trim()
+    addrEl?.innerText?.trim()
+    || (postalMatch ? postalMatch[0] : '')
     || ''
   ).replace(/\s+/g, ' ').slice(0, 100);
 
-  // Detect city from URL
+  // City: from URL first, then from postal code match
   const cityMatch = url.match(
-    /\/(berlin|hamburg|m[uü][e]?nchen|frankfurt|k[oö]ln|d[uü]sseldorf|stuttgart|leipzig|dresden|hannover|bremen|n[uü]rnberg|augsburg|mainz|freiburg|bonn|mannheim|dortmund|essen)\//i
+    /\/(berlin|hamburg|m[uü][e]?nchen|frankfurt|k[oö]ln|d[uü]sseldorf|stuttgart|leipzig|dresden|hannover|bremen|n[uü]rnberg|augsburg|mainz|freiburg|bonn|mannheim|dortmund|essen|troisdorf|bonn|n[uü]rnberg)\//i
   );
-  const city = cityMatch ? cityMatch[1].charAt(0).toUpperCase() + cityMatch[1].slice(1) : '';
+  const city = cityMatch
+    ? cityMatch[1].charAt(0).toUpperCase() + cityMatch[1].slice(1)
+    : (postalMatch ? postalMatch[2].split(/[\s\/,]/)[0] : '');
 
   return {
     name, address, city, price, area, rooms, yearBuilt,
@@ -353,8 +370,15 @@ function calcScore(d, state) {
 
 let abortSearch = false;
 
+// Keep-alive alarm: fires every 25s to prevent service worker from sleeping
+// during a long search (MV3 workers idle out after ~30s of inactivity).
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'keepAlive') { /* just wakes the worker */ }
+});
+
 async function runSearch({ city, budget, maxListings }) {
   abortSearch = false;
+  chrome.alarms.create('keepAlive', { periodInMinutes: 0.4 }); // every 24s
   send('progress', { msg: `Searching ${city}…`, pct: 2 });
 
   const cityLow = city.toLowerCase();
@@ -474,6 +498,7 @@ async function runSearch({ city, budget, maxListings }) {
     await pushToDashboard(saved);
   }
 
+  chrome.alarms.clear('keepAlive');
   send('done', {
     listings: saved,
     msg: `Done — ${saved.length} listing${saved.length !== 1 ? 's' : ''} found.`,
