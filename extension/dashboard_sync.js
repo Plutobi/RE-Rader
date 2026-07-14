@@ -22,7 +22,8 @@
     const merged = [...existing, ...fresh].slice(-300);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
 
-    // Tell the page to re-render without a full reload
-    window.postMessage({ type: 'RE_RADAR_EXT_SYNC', count: fresh.length }, '*');
+    // Reload so the dashboard reads the updated localStorage on startup.
+    // On second load fresh.length === 0 so no infinite loop.
+    window.location.reload();
   });
 })();

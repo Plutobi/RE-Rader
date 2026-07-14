@@ -428,7 +428,7 @@ async function runSearch({ city, budget, maxListings }) {
         // Enrich with defaults before scoring
         const enrichBase = {
           ...data,
-          id: `ext-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          id: url.replace(/https?:\/\/(?:www\.)?/, '').replace(/[^a-zA-Z0-9]/g, '-').slice(0, 80),
           city: data.city || city,
           state,
           mietpreisbremse: mpb,
