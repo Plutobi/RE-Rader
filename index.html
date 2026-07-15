@@ -1628,7 +1628,7 @@ function renderCards(data){
   </div>
   ${flags?`<div class="flags">${flags}</div>`:''}
   <div class="card-footer">
-    <span class="card-source">${escH(l.source||l.city||'')}</span>
+    <span class="card-source">${l.sourceUrl?`<a href="${l.sourceUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-decoration-style:dotted;" title="View on ${escH(l.source||'portal')}">${escH(l.source||l.city||'')} ↗</a>`:escH(l.source||l.city||'')}</span>
     <div class="card-actions">
       <button class="action-btn" onclick="openModal('${l.id}')">${t('edit')}</button>
       <button class="action-btn del" onclick="deleteListing('${l.id}')">${t('del')}</button>
@@ -1743,15 +1743,17 @@ function saveListing(){
   const name=document.getElementById('f_name').value.trim();
   if(!name){alert('Property name is required.');return;}
   const v=id=>(document.getElementById(id)||{value:''}).value;
+  const orig=editId?(listings.find(l=>l.id===editId)||{}): {};
   const entry={
-    id:editId||crypto.randomUUID(),name,address:v('f_address').trim(),state:v('f_state'),city:v('f_city').trim(),yearBuilt:v('f_year'),source:v('f_source').trim(),imageUrl:v('f_imageUrl').trim(),
+    ...orig,
+    id:editId||crypto.randomUUID(),name,address:v('f_address').trim(),state:v('f_state'),city:v('f_city').trim(),yearBuilt:v('f_year'),source:v('f_source').trim()||orig.source,imageUrl:v('f_imageUrl').trim(),
     price:v('f_price'),area:v('f_area'),grunderwerbsteuer:v('f_grest'),notarkosten:v('f_notar'),maklergebuehr:v('f_makler'),
     coldRent:v('f_coldRent'),warmRent:v('f_warmRent'),rentType:v('f_rentType'),tenanted:v('f_tenanted'),
     mietpreisbremse:document.getElementById('f_mpb').checked,
     hausgeld:v('f_hausgeld'),umlagefaehig:v('f_umlagefaehig'),ruecklage:v('f_ruecklage'),
     energy:v('f_energy'),spekfrist:v('f_spekfrist'),maintenanceBacklog:document.getElementById('f_backlog').checked,
     notes:v('f_notes').trim(),
-    createdAt:editId?(listings.find(l=>l.id===editId)||{}).createdAt:new Date().toISOString(),
+    createdAt:orig.createdAt||new Date().toISOString(),
     updatedAt:new Date().toISOString()
   };
   if(editId){const i=listings.findIndex(l=>l.id===editId);if(i>=0)listings[i]=entry;}else listings.push(entry);
