@@ -55,6 +55,15 @@ const PORTALS = [
   },
 ];
 
+// ── Pre-configured API key (config.js, never committed to git) ───────────────
+try { importScripts('config.js'); } catch (_) { /* file not present — that's fine */ }
+
+// ── Side panel: open on toolbar icon click ────────────────────────────────────
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => {});
+chrome.action.onClicked.addListener((tab) => {
+  chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => {});
+});
+
 // ── Port (persistent connection to popup) ─────────────────────────────────────
 let port = null;
 
@@ -262,6 +271,8 @@ function __extractData() {
     sourceUrl: url,
     source: location.hostname.replace('www.', ''),
     createdAt: new Date().toISOString(),
+    // Raw text for optional Claude enrichment (first 4000 chars)
+    _rawText: (document.body.innerText || '').slice(0, 4000),
   };
 }
 
@@ -459,7 +470,25 @@ async function runSearch({ city, budget, maxListings }) {
       tab = await openTab(url);
       await waitForLoad(tab.id);
 
-      const data = await execScript(tab.id, __extractData);
+      let data = await execScript(tab.id, __extractData);
+
+      // ── Optional Claude enrichment ──────────────────────────────────────────
+      if (data) {
+        // Priority: config.js pre-configured key → chrome.storage key (settings panel)
+        const { claude_api_key: storedKey } = await chrome.storage.local.get('claude_api_key');
+        const apiKey = (typeof self.RE_RADAR_KEY === 'string' && self.RE_RADAR_KEY) || storedKey || null;
+        if (apiKey) {
+          send('progress', { msg: `AI enriching listing…`, pct: progPct });
+          const enriched = await enrichWithClaude(data._rawText || '', apiKey);
+          // Merge: Claude values override regex only where Claude found something
+          const FIELDS = ['name','address','city','price','area','rooms','coldRent',
+                          'hausgeld','energy','yearBuilt','tenanted','maklergebuehr'];
+          for (const f of FIELDS) {
+            if (enriched[f] != null) data[f] = enriched[f];
+          }
+        }
+        delete data._rawText; // don't store raw text in listings
+      }
 
       if (data && data.price && data.area) {
         if (budget && data.price > budget) {
@@ -552,6 +581,56 @@ async function pushToDashboard(listings) {
     }
   } catch (_) {
     // Dashboard tab not open — silently ignore
+  }
+}
+
+// ── Claude AI enrichment ───────────────────────────────────────────────────────
+// Sends raw page text to Claude Haiku to extract fields that regex misses.
+// API key is stored in chrome.storage.local — never hardcoded.
+// Returns a partial object; null fields are ignored (regex value kept).
+async function enrichWithClaude(rawText, apiKey) {
+  const prompt = `Extract German real estate listing data from this page text. Return ONLY a JSON object, no explanation. Use null for fields not found.
+
+Fields:
+- name: clean property title (no price or size info)
+- address: full street address including house number
+- city: city name
+- price: purchase price in euros (number)
+- area: living area in m² (number, realistic range 15-500)
+- rooms: number of rooms (number, range 0.5-20)
+- coldRent: monthly cold rent in euros (number)
+- hausgeld: monthly service charge in euros (number)
+- energy: energy class, one of A+/A/B/C/D/E/F/G/H
+- yearBuilt: construction year (number)
+- tenanted: "yes" if currently rented, "no" if vacant, "unknown"
+- maklergebuehr: broker fee in % (0 if provisionsfrei or ohne Provision)
+
+German number format: "340.000" = 340000, "1.234,56" = 1234.56
+
+Page text:
+${rawText}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) return {};
+    const json = await res.json();
+    const text = json.content?.[0]?.text || '{}';
+    const match = text.match(/\{[\s\S]*\}/);
+    return match ? JSON.parse(match[0]) : {};
+  } catch (_) {
+    return {};
   }
 }
 

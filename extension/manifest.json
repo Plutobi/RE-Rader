@@ -3,14 +3,15 @@
   "name": "RE Radar",
   "version": "1.0.0",
   "description": "Search German real estate portals and score investment properties — no bots, no API fees",
-  "permissions": ["tabs", "storage", "scripting", "alarms"],
+  "permissions": ["tabs", "storage", "scripting", "alarms", "sidePanel"],
   "host_permissions": [
     "https://www.immowelt.de/*",
     "https://www.immobilienscout24.de/*",
     "https://www.ohne-makler.net/*",
     "https://www.immonet.de/*",
     "https://www.kleinanzeigen.de/*",
-    "https://plutobi.github.io/*"
+    "https://plutobi.github.io/*",
+    "https://api.anthropic.com/*"
   ],
   "content_scripts": [
     {
@@ -22,8 +23,10 @@
   "background": {
     "service_worker": "background.js"
   },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
   "action": {
-    "default_popup": "popup.html",
     "default_title": "RE Radar",
     "default_icon": {
       "16": "icons/icon16.png",
